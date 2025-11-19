@@ -2,3 +2,5 @@ model
 obj/
 
 *.py
+dataset/
+py/
