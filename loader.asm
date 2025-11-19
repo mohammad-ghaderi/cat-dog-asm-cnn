@@ -33,6 +33,28 @@ load_train_images:
     mov rsi, temp  
     syscall
 
+    ; load labels
+    mov rax, 2              ; sys open
+    mov rdi, train_label
+    mov rsi, 0              ; O_RDONLY
+    syscall
+    mov f12, rax            ; save fd
+
+    mov rax, rbx
+    imul rax, B             ; byte per batch
+    mov rsi, rax
+
+   mov rax, 8              ; sys lseek
+    mov rdi, r12            ; fd
+    mov rdi, 0              ; seek set
+    syscall
+
+    mov rax, 0              ; sys read
+    mov rdi, r12            ; fd
+    mov rdx, B    ; bytes to read
+    mov rsi, label  
+    syscall
+
     ; convert to float from byte and store in input
     mov rbx, 3*128*128*B
     call convert_to_float
