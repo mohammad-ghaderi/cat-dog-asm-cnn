@@ -3,8 +3,9 @@ global conv1_b, conv2_b, conv3_b
 global input, conv1_out, pool1_out, conv2_out
 global pool2_out, conv3_out, pool3_out, fc1_out
 global output, fc1_w, fc1_b
+global B
 
-B equ 32           
+B equ 32        ; Batch size     
 
 section .bss
 
@@ -16,7 +17,9 @@ conv1_b resd 32
 conv2_b resd 64
 conv3_b resd 128
 
-input resd B*3*128*128     
+input resd B*3*128*128  
+labels resb B
+
 conv1_out resd B*32*128*128
 pool1_out resd B*32*64*64  
 
