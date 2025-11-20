@@ -7,6 +7,8 @@ section .data
 section .text
 global _start
 
+extern load_train_images
+
 _start:
 
     mov rax, 1
@@ -15,6 +17,8 @@ _start:
     mov rdx, len
     syscall
 
+    xor rdi, rdi
+    call load_train_images
 
     ; exit
     mov rax, 60
