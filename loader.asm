@@ -79,7 +79,7 @@ convert_to_float:
     
     movzx eax, byte [temp + rcx]    ; load byte
     cvtsi2ss xmm0, eax              ; convert to float
-    ;mulss xmm0, [one_over_255]      ; normalize 0-1
+    mulss xmm0, [one_over_255]      ; normalize 0-1
     movss [input + rcx*4], xmm0
 
     inc rcx
