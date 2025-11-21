@@ -8,6 +8,7 @@ section .text
 global _start
 
 extern load_train_images
+extern forward_path
 
 _start:
 
@@ -17,7 +18,6 @@ _start:
     mov rdx, len
     syscall
 
-    xor rdi, rdi
     call load_train_images
 
     ; exit

@@ -4,24 +4,21 @@ global load_test_images
 extern input
 extern label
 B equ 32
+MAX_SIZE equ 19998
 
 section .bss
-temp resb B*3*128*128
+all_data resb MAX_SIZE*3*128*128
+all_label resb MAX_SIZE
 
 section .text
-; rdi = batch index
 load_train_images:
-    mov rbx, rdi            ; save the index
-
     mov rax, 2              ; sys open
     lea rdi, [rel train_data]
     mov rsi, 0              ; O_RDONLY
     syscall
     mov r12, rax            ; save fd
 
-    mov rax, rbx
-    imul rax, 3*128*128*B   ; byte per batch
-    mov rsi, rax
+    xor rsi, rsi
     mov rax, 8              ; sys lseek
     mov rdi, r12            ; fd
     mov rdx, 0              ; seek set
@@ -29,8 +26,8 @@ load_train_images:
 
     mov rax, 0              ; sys read
     mov rdi, r12            ; fd
-    mov rdx, 3*128*128*B    ; bytes to read
-    lea rsi, [rel temp]  
+    mov rdx, 3*128*128*MAX_SIZE    ; bytes to read (all)
+    lea rsi, [rel all_data]  
     syscall
 
     ; load labels
@@ -40,9 +37,7 @@ load_train_images:
     syscall
     mov r13, rax            ; save fd
 
-    mov rax, rbx
-    imul rax, B             ; byte per batch
-    mov rsi, rax
+    xor rsi, rsi
     mov rax, 8              ; sys lseek
     mov rdi, r13            ; fd
     mov rdx, 0              ; seek set
@@ -50,13 +45,9 @@ load_train_images:
 
     mov rax, 0              ; sys read
     mov rdi, r13            ; fd
-    mov rdx, B    ; bytes to read
-    lea rsi, [rel label]
+    mov rdx, MAX_SIZE    ; bytes to read (all)
+    lea rsi, [rel all_label]
     syscall
-
-    ; convert to float from byte and store in input
-    mov rbx, 3*128*128*B
-    call convert_to_float
 
     ; close
     mov rax, 3              ; sys close
@@ -77,7 +68,7 @@ convert_to_float:
     cmp rcx, rbx
     jge .done
     
-    movzx eax, byte [temp + rcx]    ; load byte
+    movzx eax, byte [all_data + rcx]    ; load byte
     cvtsi2ss xmm0, eax              ; convert to float
     mulss xmm0, [one_over_255]      ; normalize 0-1
     movss [input + rcx*4], xmm0
