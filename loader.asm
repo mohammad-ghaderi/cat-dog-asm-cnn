@@ -1,9 +1,9 @@
 global load_train_images
 global load_test_images
+global load_batch
 
-extern input
-extern label
 B equ 32
+BATCH_BYTES equ B*3*128*128
 MAX_SIZE equ 19998
 
 section .bss
@@ -62,21 +62,42 @@ load_test_images:
 ; later...
 
 
-convert_to_float:
+;=============== Load & Convert batch to float ==================
+; rax = index of the batch, batch size should be 2^n and n >= 4
+; r8 = input address for a batch
+; r9 = labels address for a batch
+load_batch:
     xor rcx, rcx
-.convert_loop:
-    cmp rcx, rbx
-    jge .done
+    lea rsi, [rel all_data]
+    lea rdi, [rel all_label]
+    imul rax, B
+    add rdi, rax
+    imul rax, 4
+    add rsi, rax
+.data_loop:
+    cmp rcx, BATCH_BYTES
+    jge .data_done
     
-    movzx eax, byte [all_data + rcx]    ; load byte
-    cvtsi2ss xmm0, eax              ; convert to float
-    mulss xmm0, [one_over_255]      ; normalize 0-1
-    movss [input + rcx*4], xmm0
+    vmovdqu8 zmm0, [rsi + rcx]                      ; load 16 bytes
+    vpmovzxbd zmm1, xmm0                            ; expand low 16 bytes
+    vcvtdq2ps zmm2, zmm1                            ; convert to float32
+    vbroadcastss zmm3, dword [one_over_255]
+    vmulps zmm2, zmm2, zmm3                         ; normalize 0-1
+    vmovups [r8 + rcx*4], zmm2                      ; store 16 float
+    add rcx, 16
+    jmp .data_loop
 
-    inc rcx
-    jmp .convert_loop
+.data_done:
+    xor rcx, rcx
 
-.done:
+.label_loop:
+    cmp rcx, B
+    jge .label_done
+    vmovdqu8 zmm0, [rdi + rcx]
+    vmovdqu8 [r9 + rcx], zmm0                       ; mov 16 labels from all_labels to labels
+    add rcx, 16
+
+.label_done:
     ret
 
 

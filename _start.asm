@@ -7,8 +7,9 @@ section .data
 section .text
 global _start
 
-extern load_train_images
+extern load_train_images, load_batch
 extern forward_path
+extern input, label
 
 _start:
 
@@ -19,6 +20,11 @@ _start:
     syscall
 
     call load_train_images
+
+    lea r8, [rel input]
+    lea r9, [rel label]
+    xor rax, rax            ; batch index
+    call load_batch
 
     ; exit
     mov rax, 60
