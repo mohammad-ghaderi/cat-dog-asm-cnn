@@ -36,3 +36,6 @@ output resd  B
 fc1_w resd 128*16*16*128         
 fc1_b resd 128         
 
+fc2_w resd 128
+fc2_b resd 1
+
