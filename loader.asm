@@ -3,11 +3,12 @@ global load_test_images
 global load_batch
 
 B equ 32
-BATCH_BYTES equ B*3*128*128
+IMAGE_SIZE equ 3*128*128
+BATCH_BYTES equ B*IMAGE_SIZE
 MAX_SIZE equ 19998
 
 section .bss
-all_data resb MAX_SIZE*3*128*128
+all_data resb MAX_SIZE*IMAGE_SIZE
 all_label resb MAX_SIZE
 
 section .text
@@ -26,7 +27,7 @@ load_train_images:
 
     mov rax, 0              ; sys read
     mov rdi, r12            ; fd
-    mov rdx, 3*128*128*MAX_SIZE    ; bytes to read (all)
+    mov rdx, IMAGE_SIZE*MAX_SIZE    ; bytes to read (all)
     lea rsi, [rel all_data]  
     syscall
 
@@ -72,7 +73,7 @@ load_batch:
     lea rdi, [rel all_label]
     imul rax, B
     add rdi, rax
-    imul rax, 4
+    imul rax, IMAGE_SIZE
     add rsi, rax
 .data_loop:
     cmp rcx, BATCH_BYTES
