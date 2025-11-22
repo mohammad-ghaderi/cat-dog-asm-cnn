@@ -8,6 +8,7 @@ section .text
 global _start
 
 extern load_train_images, load_batch
+extern initialize_parameters
 extern forward_path
 extern input, label
 
@@ -20,6 +21,8 @@ _start:
     syscall
 
     call load_train_images
+
+    call initialize_parameters
 
     lea r8, [rel input]
     lea r9, [rel label]
