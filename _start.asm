@@ -12,6 +12,8 @@ extern initialize_parameters
 extern forward_path
 extern input, label
 
+extern add_padding
+
 _start:
 
     mov rax, 1
@@ -28,6 +30,11 @@ _start:
     lea r9, [rel label]
     xor rax, rax            ; batch index
     call load_batch
+
+    lea rdi, [rel input]
+    mov rsi, 128
+    mov rdx, 3
+    call add_padding
 
     ; exit
     mov rax, 60
