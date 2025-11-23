@@ -14,6 +14,7 @@ section .text
 ; (r8 = temp address, r9 = sample index)
 add_padding:
     lea r8, [rel temp]
+    mov r13, rdi
     mov r9, B
 
     mov rbx, rsi
@@ -59,8 +60,37 @@ add_padding:
     jnz .loop
 
     ; mov from temp to input
-    ; next step
+    lea r8, [rel temp]
+    mov rdi, r13
+    mov rbx, rsi
+    add rbx, 2
+    imul rbx, rbx
+    imul rbx, B
 
+    mov r13, rbx
+    and r13, 15
+
+    shr rbx, 4
+.replace_loop:
+    vmovdqu32 zmm1, [r8]
+    vmovdqu32 [rdi], zmm1
+    add r8, 64
+    add rdi, 64
+    dec rbx
+    jnz .replace_loop
+
+    ; tail
+    test r13, r13
+    jz .done
+    mov ecx, r13d      ; number of elements (0-15)
+    mov eax, 1
+    shl eax, cl        ; 1 << r13
+    dec eax            ; (1 << r13) - 1
+    
+    kmovd k1, eax
+    vmovdqu32 zmm1, [r8]             ; maybe it's wrong;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+    vmovdqu32 [rdi]{k1}, zmm1
+.done:
     ret
 
 
