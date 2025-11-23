@@ -18,7 +18,7 @@ conv1_b resd 32
 conv2_b resd 64
 conv3_b resd 128
 
-input resd B*3*128*128  
+input resd B*3*130*130  
 label resb B
 
 conv1_out resd B*32*128*128
