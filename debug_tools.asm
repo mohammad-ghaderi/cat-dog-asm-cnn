@@ -1,8 +1,10 @@
 global write_floats
 
+; rdi = pointer to array
+; rsi = count
+; rdx = file name
 write_floats:
     push rax
-    push rdx
     push r8
     push r9
     push r10
@@ -10,8 +12,6 @@ write_floats:
 
     push rbp
     mov rbp, rsp
-
-    lea rdx, [rel output]
 
     mov r8, rdi       ; A
     mov r9, rsi       ; x
@@ -54,9 +54,5 @@ write_floats:
     pop r10
     pop r9
     pop r8
-    pop rdx
     pop rax
     ret
-
-section .data
-output db "debug/data.raw",0
