@@ -65,6 +65,7 @@ add_padding:
     mov rbx, rsi
     add rbx, 2
     imul rbx, rbx
+    imul rbx, rdx           ; this line wasted my day :(
     imul rbx, B
 
     mov r13, rbx
