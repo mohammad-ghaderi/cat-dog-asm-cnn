@@ -80,17 +80,6 @@ add_padding:
     dec rbx
     jnz .replace_loop
 
-    ; tail
-    test r13, r13
-    jz .done
-    mov ecx, r13d      ; number of elements (0-15)
-    mov eax, 1
-    shl eax, cl        ; 1 << r13
-    dec eax            ; (1 << r13) - 1
-    
-    kmovd k1, eax
-    vmovdqu32 zmm1, [r8]             ; maybe it's wrong;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
-    vmovdqu32 [rdi]{k1}, zmm1
 .done:
     ret
 
