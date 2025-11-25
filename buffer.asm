@@ -18,20 +18,20 @@ conv1_b resd 32
 conv2_b resd 64
 conv3_b resd 128
 
-input resd B*3*130*130  
-label resb B
+input resd 3*130*130  
+label resb 1
 
-conv1_out resd B*32*128*128
-pool1_out resd B*32*64*64  
+conv1_out resd 32*128*128
+pool1_out resd 32*64*64  
 
-conv2_out resd B*64*64*64  
-pool2_out resd B*64*32*32  
+conv2_out resd 64*64*64  
+pool2_out resd 64*32*32  
 
-conv3_out resd B*128*32*32 
-pool3_out resd B*128*16*16 
+conv3_out resd 128*32*32 
+pool3_out resd 128*16*16 
 
-fc1_out resd B*128         
-output resd  B
+fc1_out resd 128         
+output resd  1
 
 fc1_w resd 128*16*16*128         
 fc1_b resd 128         
