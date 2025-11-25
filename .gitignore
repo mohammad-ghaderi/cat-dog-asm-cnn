@@ -4,3 +4,4 @@ obj/
 *.py
 dataset/
 py/
+debug/
