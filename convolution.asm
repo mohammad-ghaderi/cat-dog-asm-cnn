@@ -1,4 +1,4 @@
-globa conv1_3x3
+global conv1_3x3
 
 extern input, conv1_out
 extern conv1_w, conv1_b
@@ -18,7 +18,7 @@ conv1_3x3:
     kmovw k1, ebx               ; mask
     mov rbx, 3*130*4            ; one layer below in 3d input
 
-    xor zmm0, zmm0
+    vxorps zmm0, zmm0, zmm0
     
     vmovdqu32 zmm2 {k1}{z}, [rdi]
     vmovdqu32 zmm3 {k1}{z}, [rdi+9*4]
@@ -89,4 +89,4 @@ conv1_3x3:
     ret                 ; end
 
 .next:
-    jmp kernel_loop
+    jmp .kernel_loop
