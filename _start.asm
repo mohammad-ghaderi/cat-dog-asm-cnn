@@ -37,14 +37,16 @@ _start:
     xor rax, rax            ; batch index
     call load_batch
 
-    CALL_WRITE_FLOATS_FILE input, 1572864, debug2
+    ; CALL_WRITE_FLOATS_FILE input, 1572864, debug2
 
     lea rdi, [rel input]
     mov rsi, 128
     mov rdx, 3
     call add_padding
 
-    CALL_WRITE_FLOATS_FILE input, 1622400, debug1
+    ; CALL_WRITE_FLOATS_FILE input, 1622400, debug1
+
+    call forward_path
 
     ; exit
     mov rax, 60

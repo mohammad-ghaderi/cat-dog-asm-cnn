@@ -9,9 +9,13 @@ nasm -f elf64 -g -F dwarf buffer.asm -o obj/buffer.o
 nasm -f elf64 -g -F dwarf parameters.asm -o obj/parameters.o
 nasm -f elf64 -g -F dwarf padding.asm -o obj/padding.o
 nasm -f elf64 -g -F dwarf debug_tools.asm -o obj/debug.o
+nasm -f elf64 -g -F dwarf forward.asm -o obj/forward.o
+nasm -f elf64 -g -F dwarf convolution.asm -o obj/conv.o
 
 # Link
-ld -o model obj/buffer.o obj/debug.o obj/padding.o obj/parameters.o obj/loader.o  obj/_start.o \
+ld -o model obj/buffer.o obj/debug.o obj/padding.o \
+      obj/conv.o obj/forward.o \
+      obj/parameters.o obj/loader.o  obj/_start.o \
    -dynamic-linker /lib64/ld-linux-x86-64.so.2 -lc -lm
 
 
