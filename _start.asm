@@ -17,6 +17,9 @@ extern initialize_parameters
 extern forward_path
 extern input, label
 
+extern conv1_out
+
+
 extern add_padding
 extern B
 
@@ -38,7 +41,7 @@ _start:
     xor rbx, rbx
     call load_sample
 
-    CALL_WRITE_FLOATS_FILE input, 49142, debug2     ; 128*128*3
+    CALL_WRITE_FLOATS_FILE input, 49152, debug2     ; 128*128*3
 
     lea rdi, [rel input]
     mov rsi, 128
@@ -47,7 +50,9 @@ _start:
 
     CALL_WRITE_FLOATS_FILE input, 50700 , debug1   ; (1+128+1)*(1+128+128)*3
 
-    ;call forward_path
+    call forward_path
+
+    CALL_WRITE_FLOATS_FILE conv1_out, 524288 , debug3   ; 128*128*32
 
     ; exit
     mov rax, 60

@@ -21,14 +21,14 @@ conv2d:
     imul r10, r10, 12       ; r10 = r10 * 3*4       size of one layer of input (byte)
     imul r12, rbx, 12       ; r12 = rbx * 3*4       size of one layer of filter (byte)       
 
-.next_i_j
+.next_i_j:
+    xor r13, r13            ; filter idx
     vxorps zmm0, zmm0, zmm0         ; answer of zmm(4,5,6)
 
+.filter_loop:
     vmovdqu32 zmm1 {k1}{z}, [rsi]
     vmovdqu32 zmm2 {k1}{z}, [rsi + r10]
     vmovdqu32 zmm3 {k1}{z}, [rsi + r10*2]
-    xor r13, r13            ; filter idx
-.filter_loop:
     mov r11, r12
     shr r11, 6              ; number of blocks of 16 float32 number
 
@@ -39,8 +39,10 @@ conv2d:
     vfmadd231ps zmm0, zmm2, zmm5                ; zmm0 += zmm2 * zmm5
     vfmadd231ps zmm0, zmm3, zmm6                ; zmm0 += zmm3 * zmm6
     
+    add rdi, 64     ; 16*4 go for next 16 numbers of filter
+    add rsi, 64     ; 16*4 go for next 16 numbers of input 
     dec r11
-    jnz .next
+    jg .filter_loop
 
     ; sum of 16 float in zmm0
     vextractf32x8 ymm1, zmm0, 1   ; high 256 bits
@@ -56,27 +58,32 @@ conv2d:
     movss xmm1, [r14 + r13*4]   ; bias
     addss xmm0, xmm1
     movss [rdx], xmm0           ; save the answer of a filter for output[i][j]
+    vxorps zmm0, zmm0, zmm0         ; answer to 0
 
     add rdx, 4          ; to next output
+
+
+    imul r15, r12, 3                
+    add rdi, r15                ; rdi += r12*3 next filter
+    lea r15, [r12 + 30]          ; just a trick hhhhhhhhhaaaaaaaaaahaaaaaaa
+    shr r15, 6
+    shl r15, 6                  ; niccccceeeeeeee ;)
+    sub rdi, r15                ; set the rdi to the start of the filter (has been moved before)
+    sub rsi, r15                ; same as above for input                
 
     inc r13
     cmp r13, rcx
     je .end_filters
-    lea rdi, [rdi + r12*3]                      ; rdi += r12*3 next filter
-    lea rdi, [rdi + rbx*(-4)]                   ; undo the shifting for filter
-    lea rsi, [rsi + rbx*(-4)]                   ; same as above for input
-    jmp .filter_loop
-
-.next:
-    add rdi, 64     ; 16*4 go for next 16 numbers of filter
-    add rsi, 64     ; 16*4 go for next 16 numbers of input 
+    
     jmp .filter_loop
 
 .end_filters:
+    lea rsi, [rsi + rbx*4]     ; mov j = j + 1 also on input
     inc r9
     cmp r9, rax
     jne .next_i_j
-    add rsi, 24     ; 2*3*4 skip 2 last pixels ( j is at the end)
+    xor r9, r9
+    lea rsi, [rsi + rbx*8]     ; skip next two j , it is at the last
 
     inc r8
     cmp r8, rax
