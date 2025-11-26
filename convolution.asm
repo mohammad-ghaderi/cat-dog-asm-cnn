@@ -57,6 +57,12 @@ conv2d:
     ; xmm0 = sum of f1...f15
     movss xmm1, [r14 + r13*4]   ; bias
     addss xmm0, xmm1
+
+    ; --- ReLU ---
+    pxor xmm1, xmm1
+    maxps xmm0, xmm1    ; xmm0 = max(xmm0, xmm1=0)
+
+
     movss [rdx], xmm0           ; save the answer of a filter for output[i][j]
     vxorps zmm0, zmm0, zmm0         ; answer to 0
 
