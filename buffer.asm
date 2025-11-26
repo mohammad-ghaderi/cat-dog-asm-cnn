@@ -22,10 +22,10 @@ input resd 3*130*130
 label resb 1
 
 conv1_out resd 32*128*128
-pool1_out resd 32*64*64  
+pool1_out resd 32*66*66  
 
 conv2_out resd 64*64*64  
-pool2_out resd 64*32*32  
+pool2_out resd 64*34*34  
 
 conv3_out resd 128*32*32 
 pool3_out resd 128*16*16 

@@ -8,30 +8,27 @@ extern conv1_out, pool1_out, conv2_out
 extern pool2_out, conv3_out, pool3_out, fc1_out
 extern output, fc1_w, fc1_b, fc2_w, fc2_b
 
+extern maxpool
+
 section .text
 
 forward_path:
-
-; rdi = filter address
-; rsi = x adress
-; rdx = output address
-; rcx = number of filters
-; rbx = number of channel
-; rax = x(input) size (one of dim)
-; r14 = address of bias vector
-; k1 = mask
-    lea rdi, [rel conv1_w]
-    lea rsi, [rel input]
-    lea rdx, [rel conv1_out]
-    mov rcx, 32
-    mov rax, 128
-    lea r14, [rel conv1_b]
+    lea rdi, [rel conv1_w]      ; rdi = filter address
+    lea rsi, [rel input]        ; rsi = x adress
+    lea rdx, [rel conv1_out]    ; rdx = output address
+    mov rcx, 32                 ; rcx = number of filters
+    mov rax, 128                ; rax = x(input) size (one of dim)
+    lea r14, [rel conv1_b]      ; r14 = address of bias vector
     mov rbx, 0000000111111111b
-    kmovw k1, ebx               ; mask
-    mov rbx, 3
+    kmovw k1, ebx               ; k1 = mask
+    mov rbx, 3                  ; rbx = number of channel
 
     call conv2d
 
-
+    lea rdx, [rel conv1_out]    ; rdx = input address
+    lea rsi, [rel pool1_out]    ; rsi = output address
+    mov rdi, 128                ; rdi = input size
+    ; mov rcx, 32               ; rcx = channel size  (not changed)
+    call maxpool
 
     ret
