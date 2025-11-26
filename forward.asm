@@ -9,10 +9,17 @@ extern pool2_out, conv3_out, pool3_out, fc1_out
 extern output, fc1_w, fc1_b, fc2_w, fc2_b
 
 extern maxpool
+extern add_padding
 
 section .text
 
 forward_path:
+
+    lea rdi, [rel input]
+    mov rsi, 128
+    mov rdx, 3
+    call add_padding
+
     lea rdi, [rel conv1_w]      ; rdi = filter address
     lea rsi, [rel input]        ; rsi = x adress
     lea rdx, [rel conv1_out]    ; rdx = output address
@@ -22,7 +29,7 @@ forward_path:
     mov rbx, 0000000111111111b
     kmovw k1, ebx               ; k1 = mask
     mov rbx, 3                  ; rbx = number of channel
-
+    
     call conv2d
 
     lea rdx, [rel conv1_out]    ; rdx = input address
