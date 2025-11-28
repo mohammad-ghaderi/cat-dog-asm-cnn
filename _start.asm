@@ -1,10 +1,7 @@
 %include "macros.inc"
 
 section .data
-    debug1 db "debug/debug1.raw", 0
     debug2 db "debug/debug2.raw", 0
-    debug3 db "debug/debug3.raw", 0
-    debug4 db "debug/debug4.raw", 0
     msg db "Hello World", 0xa
     len equ $ - msg
 
@@ -17,7 +14,6 @@ extern initialize_parameters
 extern forward_path
 extern input, label
 
-extern conv1_out
 extern B
 
 _start:
@@ -43,9 +39,6 @@ _start:
 
     call forward_path
 
-    ;CALL_WRITE_FLOATS_FILE input, 50700 , debug1   ; (1+128+1)*(1+128+128)*3
-
-    ;CALL_WRITE_FLOATS_FILE conv1_out, 524288 , debug3   ; 128*128*32
 
     ; exit
     mov rax, 60
