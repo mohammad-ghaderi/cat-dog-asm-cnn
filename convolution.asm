@@ -18,19 +18,20 @@ conv2d:
     xor r8, r8      ; i
     xor r9, r9      ; j
     lea r10, [rax + 2]      ; r10 = rax + 2         add padding
-    imul r10, r10, 12       ; r10 = r10 * 3*4       size of one layer of input (byte)
+    imul r10, rbx
+    imul r10, r10, 4        ; r10 = r10 * rbx*4     size of one layer of input (byte)
     imul r12, rbx, 12       ; r12 = rbx * 3*4       size of one layer of filter (byte)       
 
 .next_i_j:
     xor r13, r13            ; filter idx
     vxorps zmm0, zmm0, zmm0         ; answer of zmm(4,5,6)
 
+    mov r11, r12
+    shr r11, 6              ; number of blocks of 16 float32 number
 .filter_loop:
     vmovdqu32 zmm1 {k1}{z}, [rsi]
     vmovdqu32 zmm2 {k1}{z}, [rsi + r10]
     vmovdqu32 zmm3 {k1}{z}, [rsi + r10*2]
-    mov r11, r12
-    shr r11, 6              ; number of blocks of 16 float32 number
 
     vmovdqu32 zmm4 {k1}{z}, [rdi]               ; from layer 1
     vmovdqu32 zmm5 {k1}{z}, [rdi + r12]         ; from layer 2
@@ -62,29 +63,28 @@ conv2d:
     pxor xmm1, xmm1
     maxps xmm0, xmm1    ; xmm0 = max(xmm0, xmm1=0)
 
-
     movss [rdx], xmm0           ; save the answer of a filter for output[i][j]
     vxorps zmm0, zmm0, zmm0         ; answer to 0
 
     add rdx, 4          ; to next output
 
-
     imul r15, r12, 3                
     add rdi, r15                ; rdi += r12*3 next filter
     lea r15, [r12 + 30]          ; just a trick hhhhhhhhhaaaaaaaaaahaaaaaaa
-    shr r15, 6
+    shr r15, 6                  ; later i would change these two lines with (and r15, 0xFFFFC0)***
     shl r15, 6                  ; niccccceeeeeeee ;)
     sub rdi, r15                ; set the rdi to the start of the filter (has been moved before)
     sub rsi, r15                ; same as above for input                
 
     inc r13
     cmp r13, rcx
-    je .end_filters
-    
-    jmp .filter_loop
+    jne .filter_loop
 
-.end_filters:
+    ; end of filters. move the window
     lea rsi, [rsi + rbx*4]     ; mov j = j + 1 also on input
+    imul r15, r12, 3
+    imul r15, rcx
+    sub rdi, r15
     inc r9
     cmp r9, rax
     jne .next_i_j
@@ -94,7 +94,7 @@ conv2d:
     inc r8
     cmp r8, rax
     jne .next_i_j
-
+.end_of_end:
     ret             ; ---------------------  finaly end :)
 
 
