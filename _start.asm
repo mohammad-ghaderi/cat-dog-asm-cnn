@@ -1,10 +1,7 @@
 %include "macros.inc"
 
 section .data
-    debug1 db "debug/debug1.raw", 0
     debug2 db "debug/debug2.raw", 0
-    debug3 db "debug/debug3.raw", 0
-    debug4 db "debug/debug4.raw", 0
     msg db "Hello World", 0xa
     len equ $ - msg
 
@@ -12,12 +9,11 @@ section .data
 section .text
 global _start
 
-extern load_train_images, load_batch
+extern load_train_images, load_sample
 extern initialize_parameters
 extern forward_path
 extern input, label
 
-extern add_padding
 extern B
 
 _start:
@@ -34,19 +30,15 @@ _start:
 
     lea r8, [rel input]
     lea r9, [rel label]
-    xor rax, rax            ; batch index
-    call load_batch
+    xor rax, rax            ; sample index
+    xor rbx, rbx
+    call load_sample
 
-    ; CALL_WRITE_FLOATS_FILE input, 1572864, debug2
+    ;CALL_WRITE_FLOATS_FILE input, 49152, debug2     ; 128*128*3
 
-    lea rdi, [rel input]
-    mov rsi, 128
-    mov rdx, 3
-    call add_padding
-
-    ; CALL_WRITE_FLOATS_FILE input, 1622400, debug1
 
     call forward_path
+
 
     ; exit
     mov rax, 60

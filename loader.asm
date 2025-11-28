@@ -1,10 +1,10 @@
 global load_train_images
 global load_test_images
-global load_batch
+global load_sample
 
-B equ 32
+extern B
+
 IMAGE_SIZE equ 3*128*128
-BATCH_BYTES equ B*IMAGE_SIZE
 MAX_SIZE equ 19998
 
 section .bss
@@ -63,20 +63,22 @@ load_test_images:
 ; later...
 
 
-;=============== Load & Convert batch to float ==================
+;=============== Load & Convert sample to float ==================
 ; rax = index of the batch, batch size should be 2^n and n >= 4
+; rbx = index of sample in batch
 ; r8 = input address for a batch
 ; r9 = labels address for a batch
-load_batch:
+load_sample:
     xor rcx, rcx
     lea rsi, [rel all_data]
     lea rdi, [rel all_label]
     imul rax, B
+    add rax, rbx
     add rdi, rax
     imul rax, IMAGE_SIZE
     add rsi, rax
 .data_loop:
-    cmp rcx, BATCH_BYTES
+    cmp rcx, IMAGE_SIZE
     jge .data_done
     
     vmovdqu8 zmm0, [rsi + rcx]                      ; load 16 bytes
@@ -89,16 +91,9 @@ load_batch:
     jmp .data_loop
 
 .data_done:
-    xor rcx, rcx
+    mov cl, [rdi] 
+    mov [r9], cl        ; store label
 
-.label_loop:
-    cmp rcx, B
-    jge .label_done
-    vmovdqu8 zmm0, [rdi + rcx]
-    vmovdqu8 [r9 + rcx], zmm0                       ; mov 16 labels from all_labels to labels
-    add rcx, 16
-
-.label_done:
     ret
 
 

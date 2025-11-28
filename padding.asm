@@ -4,18 +4,17 @@ extern B
 
 
 section .bss
-temp resd B*66*66*32    ; this is the max needed
+temp resd 66*66*32    ; this is the max needed
 
 section .text
 
 ; rdi = address of the input
 ; rsi = size of the input
 ; rdx = number of channels
-; (r8 = temp address, r9 = sample index)
+; (r8 = temp address)
 add_padding:
     lea r8, [rel temp]
     mov r13, rdi
-    mov r9, B
 
     mov rbx, rsi
     add rbx, 2          ; padding to side
@@ -56,9 +55,6 @@ add_padding:
     mov r10, rbx
     call fill_zero
 
-    dec r9              ; for sample loop of batch
-    jnz .loop
-
     ; mov from temp to input
     lea r8, [rel temp]
     mov rdi, r13
@@ -66,7 +62,6 @@ add_padding:
     add rbx, 2
     imul rbx, rbx
     imul rbx, rdx           ; this line wasted my day :(
-    imul rbx, B
 
     mov r13, rbx
     and r13, 15

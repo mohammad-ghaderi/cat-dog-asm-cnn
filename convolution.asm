@@ -1,4 +1,4 @@
-global conv1_3x3
+global conv2d
 
 extern input, conv1_out
 extern conv1_w, conv1_b
@@ -6,42 +6,44 @@ extern B
 
 section .text
 
+; rdi = filter address
 ; rsi = x adress
 ; rdx = output address
-; rcx for F loop
-; r8 for B loop
-; r9 for R loop
-; r10 for C loop
-; zmm0 for output
-conv1_3x3:
-    mov rbx, 0000000111111111b
-    kmovw k1, ebx               ; mask
-    mov rbx, 3*130*4            ; one layer below in 3d input
+; rcx = number of filters
+; rbx = number of channel
+; rax = x(input) size (one of dim)
+; r14 = address of bias vector
+; k1 = mask
+conv2d:
+    xor r8, r8      ; i
+    xor r9, r9      ; j
+    lea r10, [rax + 2]      ; r10 = rax + 2         add padding
+    imul r10, rbx
+    imul r10, r10, 4        ; r10 = r10 * rbx*4     size of one layer of input (byte)
+    imul r12, rbx, 12       ; r12 = rbx * 3*4       size of one layer of filter (byte)       
 
-    vxorps zmm0, zmm0, zmm0
-    
-    vmovdqu32 zmm2 {k1}{z}, [rdi]
-    vmovdqu32 zmm3 {k1}{z}, [rdi+9*4]
-    vmovdqu32 zmm4 {k1}{z}, [rdi+18*4]
+.next_i_j:
+    xor r13, r13            ; filter idx
+    vxorps zmm0, zmm0, zmm0         ; answer of zmm(4,5,6)
 
-    lea rsi, [rel input]    ; address of input
-    lea rdx, [rel conv1_out]; address of ouput
-
-    xor rcx, rcx        ; filter index
+    mov r11, r12
+    shr r11, 6              ; number of blocks of 16 float32 number
 .filter_loop:
+    vmovdqu32 zmm1 {k1}{z}, [rsi]
+    vmovdqu32 zmm2 {k1}{z}, [rsi + r10]
+    vmovdqu32 zmm3 {k1}{z}, [rsi + r10*2]
 
-    xor r8, r8      ; sample index in batch
-    xor r9, r9      ; i for input row
-    xor r10, r10    ; j for input column
-.kernel_loop:
-    vmovdqu32 zmm1 {k1}{z}, [rsi]               ; first layer of the 3d window(3*3) of input
-    vfmadd231ps zmm0, zmm1, zmm2
+    vmovdqu32 zmm4 {k1}{z}, [rdi]               ; from layer 1
+    vmovdqu32 zmm5 {k1}{z}, [rdi + r12]         ; from layer 2
+    vmovdqu32 zmm6 {k1}{z}, [rdi + r12*2]       ; from layer 3
+    vfmadd231ps zmm0, zmm1, zmm4                ; zmm0 += zmm1 * zmm4
+    vfmadd231ps zmm0, zmm2, zmm5                ; zmm0 += zmm2 * zmm5
+    vfmadd231ps zmm0, zmm3, zmm6                ; zmm0 += zmm3 * zmm6
     
-    vmovdqu32 zmm1 {k1}{z}, [rsi + rbx]         ; second ... ...
-    vfmadd231ps zmm0, zmm1, zmm3
-
-    vmovdqu32 zmm1 {k1}{z}, [rsi + rbx*2]       ; third ... ... 
-    vfmadd231ps zmm0, zmm1, zmm4
+    add rdi, 64     ; 16*4 go for next 16 numbers of filter
+    add rsi, 64     ; 16*4 go for next 16 numbers of input 
+    dec r11
+    jg .filter_loop
 
     ; sum of 16 float in zmm0
     vextractf32x8 ymm1, zmm0, 1   ; high 256 bits
@@ -54,39 +56,48 @@ conv1_3x3:
     ; ymm0 = [f0+f8, f1+f9, f2+f10, f3+f11, f4+f12, f5+f13, f6+f14, f7+f15]
     ; xmm0 = [f0+f8+f4+f12, f1+f9+f5+f13, f2+f10+f6+f14, f3+f11+f7+f15]
     ; xmm0 = sum of f1...f15
-
-    movss xmm1, [conv1_b + rcx*4] ; bias
+    movss xmm1, [r14 + r13*4]   ; bias
     addss xmm0, xmm1
 
-    movss [conv1_out ], xmm0
+    ; --- ReLU ---
+    pxor xmm1, xmm1
+    maxps xmm0, xmm1    ; xmm0 = max(xmm0, xmm1=0)
 
-    add rsi, 3*4    ; move input  cursor
-    add rdx, 32*4   ; move output cursor
-    
-    inc r10
-    cmp r10, 128
-    jl .next
-    xor r10, r10
-    add rsi, 2*3*4     ; next row 2*3*4 ,skip 2 last pixel
+    movss [rdx], xmm0           ; save the answer of a filter for output[i][j]
+    vxorps zmm0, zmm0, zmm0         ; answer to 0
 
+    add rdx, 4          ; to next output
+
+    imul r15, r12, 3                
+    add rdi, r15                ; rdi += r12*3 next filter
+    lea r15, [r12 + 30]          ; just a trick hhhhhhhhhaaaaaaaaaahaaaaaaa
+    shr r15, 6                  ; later i would change these two lines with (and r15, 0xFFFFC0)***
+    shl r15, 6                  ; niccccceeeeeeee ;)
+    sub rdi, r15                ; set the rdi to the start of the filter (has been moved before)
+    sub rsi, r15                ; same as above for input                
+
+    inc r13
+    cmp r13, rcx
+    jne .filter_loop
+
+    ; end of filters. move the window
+    lea rsi, [rsi + rbx*4]     ; mov j = j + 1 also on input
+    imul r15, r12, 3
+    imul r15, rcx
+    sub rdi, r15
     inc r9
-    cmp r9, 128
-    jl .next
+    cmp r9, rax
+    jne .next_i_j
     xor r9, r9
-    add rsi, 2*130*4    ; next sample 2*130*4 , skip 2 last row
-    add rdx, 31*128*128*4  ; skip 31 filter output for reaching same filter in next sample output
+    lea rsi, [rsi + rbx*8]     ; skip next two j , it is at the last
 
     inc r8
-    cmp r8, B
-    jl .next
-    xor r8, r8
-    lea rdx, [rel input]    ; go back
-    add rdx, 128*128*4      ; next filter output
+    cmp r8, rax
+    jne .next_i_j
+.end_of_end:
+    ret             ; ---------------------  finaly end :)
 
-    cmp rcx, 32
-    jl .filter_loop
 
-    ret                 ; end
 
-.next:
-    jmp .kernel_loop
+
+    
