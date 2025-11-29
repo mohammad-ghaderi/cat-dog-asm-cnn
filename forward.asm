@@ -108,6 +108,7 @@ forward_path:
     mov rsi, [rel fc1_w]        ; rsi = pointer to weights row W[j] (float32[])
     mov rcx, 128                ; rcx = length of row
     mov rdx, [rel fc1_b]        ; rdx = pointer to bias (float32)
+    mov r12, 0                  ; flag for ReLU as activation function
     call dense
     
 

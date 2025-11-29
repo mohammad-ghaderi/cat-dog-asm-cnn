@@ -1,6 +1,7 @@
 global dense
 
 extern dot_product
+extern relu
 
 
 section .text
@@ -10,13 +11,24 @@ section .text
 ; r8  = pointer to output buffer
 ; r9 = num_neurons
 ; rcx = input_size
+; r12 = 0 = ReLU, 1 = Sigmoid
 dense:
     mov r10, r9             ; neuron index
     imul r11, rcx, 4        ; bytes of a row          
 .layer_loop:
 
     call dot_product
+
+    cmp r12, 1
+    je .no_relu
     
+    call relu
+    jmp .save_value
+
+.no_relu:
+    ; do sigmoid later
+
+.save_value:
     movss [r8], xmm0        ; save 
 
     add r8, 4               ; go to next output
