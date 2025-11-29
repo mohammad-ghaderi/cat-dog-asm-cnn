@@ -22,12 +22,12 @@ conv2d:
     imul r10, r10, 4        ; r10 = r10 * rbx*4     size of one layer of input (byte)
     imul r12, rbx, 12       ; r12 = rbx * 3*4       size of one layer of filter (byte)       
 
+    mov r11, r12
+    shr r11, 6              ; number of blocks of 16 float32 number
 .next_i_j:
     xor r13, r13            ; filter idx
     vxorps zmm0, zmm0, zmm0         ; answer of zmm(4,5,6)
 
-    mov r11, r12
-    shr r11, 6              ; number of blocks of 16 float32 number
 .filter_loop:
     vmovdqu32 zmm1 {k1}{z}, [rsi]
     vmovdqu32 zmm2 {k1}{z}, [rsi + r10]
@@ -44,6 +44,9 @@ conv2d:
     add rsi, 64     ; 16*4 go for next 16 numbers of input 
     dec r11
     jg .filter_loop
+    
+    mov r11, r12
+    shr r11, 6              ; number of blocks of 16 float32 number
 
     ; sum of 16 float in zmm0
     vextractf32x8 ymm1, zmm0, 1   ; high 256 bits
