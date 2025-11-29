@@ -47,7 +47,6 @@ forward_path:
 
     ; CALL_WRITE_FLOATS_FILE pool1_out, 131072 , debug4   ; 64*64*32
 
-
     ;----- Second layer --------------------------------------
     lea rdi, [rel pool1_out]    ; rdi = address of the input
     mov rsi, 64                 ; rsi = size of the input
@@ -70,11 +69,34 @@ forward_path:
 
     ; CALL_WRITE_FLOATS_FILE conv1_out, 131072 , debug6   ; 64*64*32
 
-
     lea rdx, [rel conv2_out]    ; rdx = input address
     lea rsi, [rel pool2_out]    ; rsi = output address
     mov rdi, 64                 ; rdi = input size
     mov rcx, 64                 ; rcx = channel size  (not changed)
+    call maxpool
+    
+    ;----- Third layer --------------------------------------
+    lea rdi, [rel pool2_out]    ; rdi = address of the input
+    mov rsi, 32                 ; rsi = size of the input
+    mov rdx, 64                 ; rdx = number of channels
+    call add_padding
+
+    lea rdi, [rel conv3_w]      ; rdi = filter address
+    lea rsi, [rel pool2_out]    ; rsi = x adress
+    lea rdx, [rel conv3_out]    ; rdx = output address
+    mov rcx, 128                ; rcx = number of filters
+    mov rax, 32                 ; rax = x(input) size (one of dim)
+    lea r14, [rel conv3_b]      ; r14 = address of bias vector
+    mov rbx, 0xFFFF
+    kmovw k1, ebx               ; k1 = mask
+    mov rbx, 64                 ; rbx = number of channel
+
+    call conv2d
+
+    lea rdx, [rel conv3_out]    ; rdx = input address
+    lea rsi, [rel pool3_out]    ; rsi = output address
+    mov rdi, 32                 ; rdi = input size
+    mov rcx, 128                 ; rcx = channel size  (not changed)
     call maxpool
 
     ret
