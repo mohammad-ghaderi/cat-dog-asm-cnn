@@ -109,6 +109,16 @@ forward_path:
     mov rcx, 128                ; rcx = length of row
     mov rdx, [rel fc1_b]        ; rdx = pointer to bias (float32)
     mov r12, 0                  ; flag for ReLU as activation function
+    mov r8, fc1_out             ; output of the first dense layer
+    call dense
+
+
+    mov rdi, [rel fc1_out]      ; rdi = pointer to input vector x (float32[])
+    mov rsi, [rel fc2_w]        ; rsi = pointer to weights row W[j] (float32[])
+    mov rcx, 1                  ; rcx = length of row
+    mov rdx, [rel fc2_b]        ; rdx = pointer to bias (float32)
+    mov r12, 1                  ; flag for ReLU as activation function
+    mov r8, output              ; output of the first dense layer
     call dense
     
 
