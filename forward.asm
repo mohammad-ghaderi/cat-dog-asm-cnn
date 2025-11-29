@@ -12,6 +12,7 @@ extern output, fc1_w, fc1_b, fc2_w, fc2_b
 
 extern maxpool
 extern add_padding
+extern dense
 
 section .text
 
@@ -99,6 +100,17 @@ forward_path:
     mov rcx, 128                 ; rcx = channel size  (not changed)
     call maxpool
 
+    ; CALL_WRITE_FLOATS_FILE pool3_out, 32768 , debug7   ; 16*16*128
+
+    ; pool3_out is the flattend (features)
+
+    mov rdi, [rel pool3_out]    ; rdi = pointer to input vector x (float32[])
+    mov rsi, [rel fc1_w]        ; rsi = pointer to weights row W[j] (float32[])
+    mov rcx, 128                ; rcx = length of row
+    mov rdx, [rel fc1_b]        ; rdx = pointer to bias (float32)
+    call dense
+    
+
     ret
 
 section .data
@@ -107,3 +119,4 @@ section .data
     debug4 db "debug/debug4.raw", 0
     debug5 db "debug/debug5.raw", 0
     debug6 db "debug/debug6.raw", 0
+    debug7 db "debug/debug7.raw", 0
