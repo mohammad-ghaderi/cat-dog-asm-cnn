@@ -3,6 +3,7 @@ global conv2d
 extern input, conv1_out
 extern conv1_w, conv1_b
 extern B
+extern relu
 
 section .text
 
@@ -63,8 +64,7 @@ conv2d:
     addss xmm0, xmm1
 
     ; --- ReLU ---
-    pxor xmm1, xmm1
-    maxps xmm0, xmm1    ; xmm0 = max(xmm0, xmm1=0)
+    call relu
 
     movss [rdx], xmm0           ; save the answer of a filter for output[i][j]
     vxorps zmm0, zmm0, zmm0         ; answer to 0
