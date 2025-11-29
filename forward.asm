@@ -17,12 +17,13 @@ section .text
 
 forward_path:
 
+    ; ---- First layer ---------------------------------
     lea rdi, [rel input]
     mov rsi, 128
     mov rdx, 3
     call add_padding
 
-    ; CALL_WRITE_FLOATS_FILE input, 50700 , debug1   ; (1+128+1)*(1+128+128)*3
+    ; CALL_WRITE_FLOATS_FILE input, 50700 , debug1   ; (1+128+1)*(1+128+1)*3
 
     lea rdi, [rel conv1_w]      ; rdi = filter address
     lea rsi, [rel input]        ; rsi = x adress
@@ -46,9 +47,41 @@ forward_path:
 
     ; CALL_WRITE_FLOATS_FILE pool1_out, 131072 , debug4   ; 64*64*32
 
+
+    ;----- Second layer --------------------------------------
+    lea rdi, [rel pool1_out]    ; rdi = address of the input
+    mov rsi, 64                 ; rsi = size of the input
+    mov rdx, 32                 ; rdx = number of channels
+    call add_padding
+
+    ; CALL_WRITE_FLOATS_FILE pool1_out, 139392 , debug5   ; (1+64+1)*(1+64+1)*32
+
+    lea rdi, [rel conv2_w]      ; rdi = filter address
+    lea rsi, [rel pool1_out]    ; rsi = x adress
+    lea rdx, [rel conv2_out]    ; rdx = output address
+    mov rcx, 64                 ; rcx = number of filters
+    mov rax, 64                 ; rax = x(input) size (one of dim)
+    lea r14, [rel conv2_b]      ; r14 = address of bias vector
+    mov rbx, 0xFFFF
+    kmovw k1, ebx               ; k1 = mask
+    mov rbx, 32                 ; rbx = number of channel
+
+    call conv2d
+
+    ; CALL_WRITE_FLOATS_FILE conv1_out, 131072 , debug6   ; 64*64*32
+
+
+    lea rdx, [rel conv2_out]    ; rdx = input address
+    lea rsi, [rel pool2_out]    ; rsi = output address
+    mov rdi, 64                 ; rdi = input size
+    mov rcx, 64                 ; rcx = channel size  (not changed)
+    call maxpool
+
     ret
 
 section .data
     debug1 db "debug/debug1.raw", 0
     debug3 db "debug/debug3.raw", 0
     debug4 db "debug/debug4.raw", 0
+    debug5 db "debug/debug5.raw", 0
+    debug6 db "debug/debug6.raw", 0
