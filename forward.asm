@@ -104,23 +104,26 @@ forward_path:
 
     ; pool3_out is the flattend (features)
 
-    mov rdi, [rel pool3_out]    ; rdi = pointer to input vector x (float32[])
-    mov rsi, [rel fc1_w]        ; rsi = pointer to weights row W[j] (float32[])
-    mov rcx, 128                ; rcx = length of row
-    mov rdx, [rel fc1_b]        ; rdx = pointer to bias (float32)
+    lea rdi, [rel pool3_out]    ; rdi = pointer to input vector x (float32[])
+    lea rsi, [rel fc1_w]        ; rsi = pointer to weights row W[j] (float32[])
+    mov rcx, 32768              ; rcx = length of row
+    lea rdx, [rel fc1_b]        ; rdx = pointer to bias (float32)
     mov r12, 0                  ; flag for ReLU as activation function
     mov r8, fc1_out             ; output of the first dense layer
+    mov r9, 128
     call dense
 
 
-    mov rdi, [rel fc1_out]      ; rdi = pointer to input vector x (float32[])
-    mov rsi, [rel fc2_w]        ; rsi = pointer to weights row W[j] (float32[])
-    mov rcx, 1                  ; rcx = length of row
-    mov rdx, [rel fc2_b]        ; rdx = pointer to bias (float32)
+    lea rdi, [rel fc1_out]      ; rdi = pointer to input vector x (float32[])
+    lea rsi, [rel fc2_w]        ; rsi = pointer to weights row W[j] (float32[])
+    mov rcx, 128                ; rcx = length of row
+    lea rdx, [rel fc2_b]        ; rdx = pointer to bias (float32)
     mov r12, 1                  ; flag for ReLU as activation function
     mov r8, output              ; output of the first dense layer
+    mov r9, 1
     call dense
     
+.stop_here:
 
     ret
 

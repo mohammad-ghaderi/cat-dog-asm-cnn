@@ -26,7 +26,7 @@ dense:
     jmp .save_value
 
 .no_relu:
-    call sigmoid
+    ; call sigmoid
 
 .save_value:
     movss [r8], xmm0        ; save 
