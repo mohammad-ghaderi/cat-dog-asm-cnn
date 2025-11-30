@@ -1,7 +1,7 @@
 global dense
 
 extern dot_product
-extern relu
+extern relu, sigmoid
 
 
 section .text
@@ -26,7 +26,7 @@ dense:
     jmp .save_value
 
 .no_relu:
-    ; do sigmoid later
+    call sigmoid
 
 .save_value:
     movss [r8], xmm0        ; save 
