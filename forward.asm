@@ -1,6 +1,6 @@
 %include "macros.inc"
 
-global forward_path
+global forward_pass
 
 extern conv2d
 extern conv1_w, conv2_w, conv3_w
@@ -16,7 +16,7 @@ extern dense
 
 section .text
 
-forward_path:
+forward_pass:
 
     ; ---- First layer ---------------------------------
     lea rdi, [rel input]
@@ -68,7 +68,7 @@ forward_path:
 
     call conv2d
 
-    ; CALL_WRITE_FLOATS_FILE conv1_out, 131072 , debug6   ; 64*64*32
+    ; CALL_WRITE_FLOATS_FILE conv2_out, 262144 , debug6   ; 64*64*64
 
     lea rdx, [rel conv2_out]    ; rdx = input address
     lea rsi, [rel pool2_out]    ; rsi = output address
@@ -122,6 +122,8 @@ forward_path:
     mov r8, output              ; output of the first dense layer
     mov r9, 1
     call dense
+
+    ; CALL_WRITE_FLOATS_FILE output, 1 , debug9   ; 1
     
 .stop_here:
 
@@ -134,3 +136,5 @@ section .data
     debug5 db "debug/debug5.raw", 0
     debug6 db "debug/debug6.raw", 0
     debug7 db "debug/debug7.raw", 0
+    debug8 db "debug/debug8.raw", 0
+    debug9 db "debug/debug9.raw", 0

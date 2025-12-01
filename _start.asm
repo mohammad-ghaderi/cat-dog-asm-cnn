@@ -11,8 +11,10 @@ global _start
 
 extern load_train_images, load_sample
 extern initialize_parameters
-extern forward_path
-extern input, label
+extern forward_pass
+extern backward_pass
+extern input, label, output
+extern compute_loss
 
 extern B
 
@@ -37,7 +39,16 @@ _start:
     ;CALL_WRITE_FLOATS_FILE input, 49152, debug2     ; 128*128*3
 
 
-    call forward_path
+    call forward_pass
+
+    movss xmm0, [output]
+    movzx eax, byte [label]
+    cvtsi2ss xmm1, eax
+    call compute_loss           ; compute the loss
+
+    ; print the loss here (later)
+
+    call backward_pass
 
 
     ; exit
