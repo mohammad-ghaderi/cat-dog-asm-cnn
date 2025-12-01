@@ -21,7 +21,26 @@ sigmoid:
     subss xmm2, xmm1         ; xmm2 = -x
 
     movaps xmm0, xmm2
+
+    push rcx
+    push rdx
+    push rsi
+    push rdi
+    push r8
+    push r9
+    push r10
+    push r11
+
     call expf                ; exp(-x) returned in xmm0
+
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rdi
+    pop rsi
+    pop rdx
+    pop rcx
 
     mov rax, __one           ; load address of constant
     movss xmm1, [rax]        ; xmm1 = 1.0
