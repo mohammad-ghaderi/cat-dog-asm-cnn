@@ -9,6 +9,7 @@ extern d_pool3, d_conv3_out, d_conv3_w, d_conv3_b
 extern d_pool2, d_conv2_out, d_conv2_w, d_conv2_b
 extern d_pool1, d_conv1_out, d_conv1_w, d_conv1_b
 extern fc1_w, fc2_w
+extern maxpool_backward
 
 backward_pass:
     movss xmm0, [output]
@@ -75,8 +76,16 @@ backward_pass:
     call relu_backward              ; result in d_fc1_out
 
 
-    
+    ; Convolution Section
 
+    lea rdx, [rel d_conv3_out]      ; grad_conv input address of maxpool
+    lea rsi, [rel d_pool3]          ; grad_output address of maxpool
+    lea rbx, [rel pool3_argmax]     ; input size
+    mov rdi, 32                     ; channel size
+    mov rcx, 128                    ; pool_argmax address
+    call maxpool_backward
+
+    
 
     ret
 

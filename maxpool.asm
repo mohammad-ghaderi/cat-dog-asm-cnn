@@ -1,4 +1,4 @@
-global maxpool
+global maxpool, maxpool_backward
 
 ; rdx = input address
 ; rsi = output address
@@ -77,3 +77,68 @@ maxpool:
     
     ret ; end
 
+
+
+
+; rdx = grad_conv input address of maxpool
+; rsi = grad_output address of maxpool
+; rdi = input size
+; rcx = channel size
+; rbx = pool_argmax address
+maxpool_backward:
+    mov r8, rdi
+    shr r8, 1           ; divide by 2*2
+    mov r9, r8          ; r8 = j, r9 = i on grid
+    mov rax, r8         ; save for reseting
+
+    imul r10, rcx, 4
+    mov r11, r10
+    imul r11, rdi       ; size of a layer of input
+    mov r12, r10
+    add r12, r11
+
+    mov r13, rcx        ; channel cnt from rcx to zero
+.loop:
+
+    kmovw k0, [rbx]
+    kmovw k1, [rbx+2]
+    kmovw k2, [rbx+4]
+    kmovw k3, [rbx+6]
+
+    knotw k0, k0
+    knotw k1, k1
+    knotw k2, k2
+    knotw k3, k3
+
+    vmovdqu32 zmm4, [rsi]       
+
+    vmovdqu32 zmm0, [rdx]
+    vmovdqu32 zmm1, [rdx + r10]
+    vmovdqu32 zmm2, [rdx + r11]
+    vmovdqu32 zmm3, [rdx + r12]
+
+    vaddps zmm0 {k0}, zmm0, zmm4
+    vaddps zmm1 {k1}, zmm1, zmm4
+    vaddps zmm2 {k2}, zmm2, zmm4
+    vaddps zmm3 {k3}, zmm3, zmm4
+
+
+    add rsi, 64      ; next output grade
+    add rbx, 8       ; next argmax
+    add rdx, 64      ; next input
+    sub r13, 16         ; next channel
+    jnz .loop
+
+    mov r13, rcx    ; reset channel cnt
+    add rdx, r10    ; go to next column, stride 2
+
+    dec r8
+    jnz .loop
+
+    mov r8, rax
+    add rdx, r11
+
+    dec r9
+    jnz .loop
+    
+    ret ; end
