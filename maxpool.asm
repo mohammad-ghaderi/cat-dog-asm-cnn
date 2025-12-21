@@ -100,28 +100,27 @@ maxpool_backward:
     mov r13, rcx        ; channel cnt from rcx to zero
 .loop:
 
-    kmovw k0, [rbx]
-    kmovw k1, [rbx+2]
-    kmovw k2, [rbx+4]
-    kmovw k3, [rbx+6]
+    kmovw k1, [rbx]
+    kmovw k2, [rbx+2]
+    kmovw k3, [rbx+4]
+    kmovw k4, [rbx+6]
 
-    knotw k0, k0
     knotw k1, k1
     knotw k2, k2
     knotw k3, k3
+    knotw k4, k4
 
-    vmovdqu32 zmm4, [rsi]       
+    vmovdqu32 zmm0, [rsi]       
 
-    vmovdqu32 zmm0, [rdx]
-    vmovdqu32 zmm1, [rdx + r10]
-    vmovdqu32 zmm2, [rdx + r11]
-    vmovdqu32 zmm3, [rdx + r12]
+    vmovdqu32 zmm1, [rdx]
+    vmovdqu32 zmm2, [rdx + r10]
+    vmovdqu32 zmm3, [rdx + r11]
+    vmovdqu32 zmm4, [rdx + r12]
 
-    vaddps zmm0 {k0}, zmm0, zmm4
-    vaddps zmm1 {k1}, zmm1, zmm4
-    vaddps zmm2 {k2}, zmm2, zmm4
-    vaddps zmm3 {k3}, zmm3, zmm4
-
+    vaddps zmm1{k1}, zmm1, zmm0
+    vaddps zmm2{k2}, zmm2, zmm0
+    vaddps zmm3{k3}, zmm3, zmm0
+    vaddps zmm4{k4}, zmm4, zmm0
 
     add rsi, 64      ; next output grade
     add rbx, 8       ; next argmax
