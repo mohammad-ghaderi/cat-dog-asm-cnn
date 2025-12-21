@@ -54,3 +54,26 @@ sigmoid:
 
 section .data
 __one: dd 1.0
+
+
+; -----------------------------(later i may optimize here using AVX-512)
+; rdi = pre-activation z
+; rsi = gradient from above
+; rcx = size
+relu_backward:
+    xor rax, rax
+.relu_backward_loop:
+    movss xmm0, [rdi + rax*4]  ; z[i]
+    xorps xmm1, xmm1
+    comiss xmm0, xmm1
+    jbe .zero_grad
+    movss xmm0, [rsi + rax*4]  ; gradient from above
+    jmp .store_grad
+.zero_grad:
+    xorps xmm0, xmm0
+.store_grad:
+    movss [rsi + rax*4], xmm0
+    inc rax
+    cmp rax, rcx
+    jl .relu_backward_loop
+    ret
