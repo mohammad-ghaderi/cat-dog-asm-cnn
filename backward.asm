@@ -1,6 +1,6 @@
 global backward_pass
 extern label, output
-extern outer_product_add
+extern outer_product_add, matrix_vector_multiply
 extern fc1_out, d_fc1_out, d_fc2_w, d_fc2_b
 extern pool1_argmax, pool2_argmax, pool3_argmax
 extern pool2_out, conv3_out, pool3_out, fc1_out
@@ -10,6 +10,7 @@ extern d_pool2, d_conv2_out, d_conv2_w, d_conv2_b
 extern d_pool1, d_conv1_out, d_conv1_w, d_conv1_b
 extern fc1_w, fc2_w
 extern maxpool_backward
+extern relu_backward
 
 backward_pass:
     movss xmm0, [output]
@@ -85,7 +86,7 @@ backward_pass:
     mov rcx, 128                    ; pool_argmax address
     call maxpool_backward
 
-    
+
 
     ret
 

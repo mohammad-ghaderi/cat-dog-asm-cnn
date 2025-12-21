@@ -1,5 +1,6 @@
 global relu
 global sigmoid
+global relu_backward
 
 extern expf
 
@@ -52,8 +53,6 @@ sigmoid:
     movaps xmm0, xmm1        ; return value in xmm0
     ret
 
-section .data
-__one: dd 1.0
 
 
 ; -----------------------------(later i may optimize here using AVX-512)
@@ -77,3 +76,8 @@ relu_backward:
     cmp rax, rcx
     jl .relu_backward_loop
     ret
+
+
+
+section .data
+__one: dd 1.0
