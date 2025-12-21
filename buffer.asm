@@ -4,6 +4,12 @@ global input, label
 global conv1_out, pool1_out, conv2_out
 global pool2_out, conv3_out, pool3_out, fc1_out
 global output, fc1_w, fc1_b, fc2_w, fc2_b
+global pool1_argmax, pool2_argmax, pool3_argmax
+global d_fc2_out, d_fc2_w, d_fc2_b, d_fc1_out, d_fc1_w, d_fc1_b
+global d_pool3, d_conv3_out, d_conv3_w, d_conv3_b
+global d_pool2, d_conv2_out, d_conv2_w, d_conv2_b
+global d_pool1, d_conv1_out, d_conv1_w, d_conv1_b
+
 global B
 
 B equ 32        ; Batch size     
@@ -23,12 +29,15 @@ label resb 1
 
 conv1_out resd 32*128*128
 pool1_out resd 32*66*66  
+pool1_argmax resw 32*66*66
 
 conv2_out resd 64*64*64  
 pool2_out resd 64*34*34  
+pool2_argmax resw 64*34*34
 
 conv3_out resd 128*32*32 
 pool3_out resd 128*16*16 
+pool3_argmax resw 128*16*16 
 
 fc1_out resd 128         
 output resd  1
@@ -39,3 +48,26 @@ fc1_b resd 128
 fc2_w resd 128
 fc2_b resd 1
 
+; Gradient Vars
+d_fc2_out resd 1
+d_fc2_w resd 128
+d_fc2_b resd 1
+
+d_fc1_out resd 128
+d_fc1_w resd 128*16*16*128
+d_fc1_b resd 128
+
+d_pool3 resd 128*16*16
+d_conv3_out resd 128*32*32
+d_conv3_w resd 3*3*64*128
+d_conv3_b resd 128
+
+d_pool2 resd 64*34*34
+d_conv2_out resd 64*64*64 
+d_conv2_w resd 3*3*32*64
+d_conv2_b resd 64
+
+d_pool1 resd 64*34*34
+d_conv1_out resd 64*64*64 
+d_conv1_w resd 3*3*3*32
+d_conv1_b resd 32

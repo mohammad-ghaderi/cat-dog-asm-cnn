@@ -4,6 +4,7 @@ global maxpool
 ; rsi = output address
 ; rdi = input size
 ; rcx = channel size
+; rbx = pool_argmax address
 maxpool:
     mov r8, rdi
     shr r8, 1           ; divide by 2*2
@@ -22,6 +23,11 @@ maxpool:
     vmovdqu32 zmm1, [rdx + r10]
     vmovdqu32 zmm2, [rdx + r11]
     vmovdqu32 zmm3, [rdx + r12]
+    ; save before overwriting zmm0
+    vmovdqa32 zmm16, zmm0
+    vmovdqa32 zmm17, zmm1
+    vmovdqa32 zmm18, zmm2
+    vmovdqa32 zmm19, zmm3
 
     vmaxps zmm0, zmm0, zmm1
     vmaxps zmm0, zmm0, zmm2
@@ -29,7 +35,30 @@ maxpool:
 
     vmovdqu32 [rsi], zmm0       ; save
 
+    vcmpps k0, zmm0, zmm16, 0x0E     ; from zmm0 -> index 0
+    vcmpps k1, zmm0, zmm17, 0x0E     ; from zmm1 -> index 1
+    vcmpps k2, zmm0, zmm18, 0x0E     ; from zmm2 -> index 2
+    vcmpps k3, zmm0, zmm19, 0x0E     ; from zmm3 -> index 3
+
+    ; i think i should not use that 0x0E
+    ; the left zeroes are being ignored
+
+    kandw k4, k0, k1         ; k4 = k0 & k1
+    kandw k5, k2, k4         ; k5 = k0 & k1 & k2
+    knotw k6, k0
+    korw k1, k1, k6             ; k1 |= ~k0
+    knotw k6, k4
+    korw k2, k2, k6             ; k2 |= ~k4
+    knotw k6, k5
+    korw k3, k3, k6             ; k3 |= ~k5
+
+    kmovw [rbx], k0   ; store 16-bit mask k0 to memory at rbx
+    kmovw [rbx+2], k1
+    kmovw [rbx+4], k2
+    kmovw [rbx+6], k3
+
     add rsi, 64      ; next output
+    add rbx, 8       ; next argmax
     add rdx, 64      ; next input
     sub r13, 16         ; next channel
     jnz .loop
@@ -47,4 +76,4 @@ maxpool:
     jnz .loop
     
     ret ; end
-    
+
