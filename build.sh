@@ -15,9 +15,13 @@ nasm -f elf64 -g -F dwarf maxpool.asm -o obj/maxpool.o
 nasm -f elf64 -g -F dwarf dense.asm -o obj/dense.o
 nasm -f elf64 -g -F dwarf dot_product.asm -o obj/dot_product.o
 nasm -f elf64 -g -F dwarf activation_functions.asm -o obj/act_f.o
+nasm -f elf64 -g -F dwarf loss.asm -o obj/loss.o
+nasm -f elf64 -g -F dwarf backward.asm -o obj/backward.o
+nasm -f elf64 -g -F dwarf matrix_ops.asm -o obj/matrix_ops.o
 
 # Link
 ld -o model obj/buffer.o obj/debug.o obj/padding.o \
+      obj/loss.o obj/matrix_ops.o obj/backward.o \
       obj/act_f.o obj/dot_product.o obj/dense.o \
       obj/conv.o obj/maxpool.o obj/forward.o \
       obj/parameters.o obj/loader.o  obj/_start.o \
