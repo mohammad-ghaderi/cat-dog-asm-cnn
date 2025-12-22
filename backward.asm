@@ -11,6 +11,7 @@ extern d_pool1, d_conv1_out, d_conv1_w, d_conv1_b
 extern fc1_w, fc2_w
 extern maxpool_backward
 extern relu_backward
+extern conv2d_backward
 
 backward_pass:
     movss xmm0, [output]
@@ -86,6 +87,20 @@ backward_pass:
     mov rcx, 128                    ; pool_argmax address
     call maxpool_backward
 
+
+
+    lea rdi, [rel conv3_w]          ; filter address
+    lea rsi, [rel pool2_out]        ; x adress
+    lea rdx, [rel d_conv3_out]      ; grade_output address
+    mov rcx, 128                    ; number of filters
+    mov rbx, 64                     ; number of channel
+    mov rax, 32                     ; x(input) size (one of dim)
+    lea r14, [rel d_conv3_w]        ; address of d_W
+    lea r8, [rel d_pool2]           ; address of d_X
+    lea r9, [rel d_conv3_b]         ; address of d_B
+    mov rbx, 0xFFFF
+    kmovw k1, ebx                   ; k1 = mask
+    call conv2d_backward
 
 
     ret
