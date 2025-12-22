@@ -8,6 +8,7 @@ extern d_fc2_out, d_fc2_w, d_fc2_b, d_fc1_out, d_fc1_w, d_fc1_b
 extern d_pool3, d_conv3_out, d_conv3_w, d_conv3_b
 extern d_pool2, d_conv2_out, d_conv2_w, d_conv2_b
 extern d_pool1, d_conv1_out, d_conv1_w, d_conv1_b
+extern conv1_w, conv2_w, conv3_w
 extern fc1_w, fc2_w
 extern maxpool_backward
 extern relu_backward
@@ -71,14 +72,14 @@ backward_pass:
     mov r9, 128*16*16               ; number of columns in W (size of y)
     call matrix_vector_multiply
 
+
+    ; Convolution Section
+
     ; gradients with ReLU
     lea rdi, [rel pool3_out]        ; pre-activation
     lea rsi, [rel d_pool3]          ; gradient from above
     mov rcx, 128*16*16              ; size
     call relu_backward              ; result in d_fc1_out
-
-
-    ; Convolution Section
 
     lea rdx, [rel d_conv3_out]      ; grad_conv input address of maxpool
     lea rsi, [rel d_pool3]          ; grad_output address of maxpool
@@ -88,19 +89,24 @@ backward_pass:
     call maxpool_backward
 
 
-
     lea rdi, [rel conv3_w]          ; filter address
     lea rsi, [rel pool2_out]        ; x adress
     lea rdx, [rel d_conv3_out]      ; grade_output address
     mov rcx, 128                    ; number of filters
-    mov rbx, 64                     ; number of channel
     mov rax, 32                     ; x(input) size (one of dim)
     lea r14, [rel d_conv3_w]        ; address of d_W
     lea r8, [rel d_pool2]           ; address of d_X
     lea r9, [rel d_conv3_b]         ; address of d_B
     mov rbx, 0xFFFF
     kmovw k1, ebx                   ; k1 = mask
+    mov rbx, 64                     ; number of channel
     call conv2d_backward
+
+    ; gradients with ReLU
+    lea rdi, [rel pool3_out]        ; pre-activation
+    lea rsi, [rel d_pool3]          ; gradient from above
+    mov rcx, 128*16*16              ; size
+    call relu_backward              ; result in d_fc1_out
 
 
     ret
