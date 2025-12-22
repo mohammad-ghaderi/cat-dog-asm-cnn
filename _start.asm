@@ -5,16 +5,13 @@ section .data
     msg db "Hello World", 0xa
     len equ $ - msg
 
-
 section .text
 global _start
 
-extern load_train_images, load_sample
-extern initialize_parameters
+extern load_train_images, load_sample, initialize_parameters
 extern forward_pass
-extern backward_pass
+extern backward_pass, update_weights, compute_loss
 extern input, label, output
-extern compute_loss
 
 extern B
 
@@ -50,6 +47,7 @@ _start:
 
     call backward_pass
 
+    call update_weights
 
     ; exit
     mov rax, 60
