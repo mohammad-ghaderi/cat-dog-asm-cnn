@@ -9,6 +9,7 @@ global d_fc2_out, d_fc2_w, d_fc2_b, d_fc1_out, d_fc1_w, d_fc1_b
 global d_pool3, d_conv3_out, d_conv3_w, d_conv3_b
 global d_pool2, d_conv2_out, d_conv2_w, d_conv2_b
 global d_pool1, d_conv1_out, d_conv1_w, d_conv1_b
+global d_input_not_needed
 
 global B
 
@@ -67,7 +68,9 @@ d_conv2_out resd 64*64*64
 d_conv2_w resd 3*3*32*64
 d_conv2_b resd 64
 
-d_pool1 resd 64*34*34
-d_conv1_out resd 64*64*64 
+d_pool1 resd 32*66*66 
+d_conv1_out resd 32*128*128
 d_conv1_w resd 3*3*3*32
 d_conv1_b resd 32
+
+d_input_not_needed resd 3*130*130
