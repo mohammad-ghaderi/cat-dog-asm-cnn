@@ -122,6 +122,11 @@ maxpool_backward:
     vaddps zmm3{k3}, zmm3, zmm0
     vaddps zmm4{k4}, zmm4, zmm0
 
+    vmovdqu32 [rdx], zmm1
+    vmovdqu32 [rdx + r10], zmm2
+    vmovdqu32 [rdx + r11], zmm3
+    vmovdqu32 [rdx + r12], zmm4
+
     add rsi, 64      ; next output grade
     add rbx, 8       ; next argmax
     add rdx, 64      ; next input
