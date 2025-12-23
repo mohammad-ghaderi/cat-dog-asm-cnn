@@ -12,6 +12,7 @@ extern load_train_images, load_sample, initialize_parameters
 extern forward_pass
 extern backward_pass, update_weights, compute_loss
 extern input, label, output
+extern print_double
 
 extern B
 
@@ -35,20 +36,23 @@ _start:
 
     ;CALL_WRITE_FLOATS_FILE input, 49152, debug2     ; 128*128*3
 
-
     call forward_pass
 
-    movss xmm0, [output]
+    movss xmm1, [output]
     movzx eax, byte [label]
-    cvtsi2ss xmm1, eax
+    cvtsi2ss xmm0, eax
     call compute_loss           ; compute the loss
 
-    ; print the loss here (later)
+    ; print loss
+    cvtss2sd xmm0, xmm0           ; convert to double
+    call print_double
+    
 
     call backward_pass
 
     call update_weights
-
+    
+    inc r8
     ; exit
     mov rax, 60
     xor rdi, rdi

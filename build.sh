@@ -19,9 +19,10 @@ nasm -f elf64 -g -F dwarf loss.asm -o obj/loss.o
 nasm -f elf64 -g -F dwarf backward.asm -o obj/backward.o
 nasm -f elf64 -g -F dwarf matrix_ops.asm -o obj/matrix_ops.o
 nasm -f elf64 -g -F dwarf update_weights.asm -o obj/update_weights.o
+nasm -f elf64 -g -F dwarf print.asm -o obj/print.o
 
 # Link
-ld -o model obj/buffer.o obj/debug.o obj/padding.o \
+ld -o model obj/buffer.o obj/debug.o obj/print.o obj/padding.o \
       obj/loss.o obj/matrix_ops.o obj/backward.o obj/update_weights.o \
       obj/act_f.o obj/dot_product.o obj/dense.o \
       obj/conv.o obj/maxpool.o obj/forward.o \
