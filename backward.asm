@@ -12,7 +12,7 @@ extern conv1_w, conv2_w, conv3_w
 extern fc1_w, fc2_w
 extern maxpool_backward
 extern relu_backward
-extern conv2d_backward
+extern conv2d_backward, remove_padding
 extern d_input_not_needed
 
 backward_pass:
@@ -104,11 +104,20 @@ backward_pass:
     mov rbx, 64                     ; number of channel
     call conv2d_backward
 
+    lea rdi, [rel d_pool2]          ; address of the input
+    mov rsi, 32                     ; size of the input
+    mov rdx, 64                     ; number of channels
+    call remove_padding
+    lea rdi, [rel pool2_out]          ; address of the input
+    mov rsi, 32                     ; size of the input
+    mov rdx, 64                     ; number of channels
+    call remove_padding
+
     ; ==== second layer =====
 
     lea rdi, [rel pool2_out]        ; pre-activation
     lea rsi, [rel d_pool2]          ; gradient from above
-    mov rcx, 64*34*34               ; size
+    mov rcx, 64*32*32               ; size
     call relu_backward              ; result in d_pool2
     
 
@@ -133,12 +142,21 @@ backward_pass:
     mov rbx, 32                     ; number of channel
     call conv2d_backward
 
+    lea rdi, [rel d_pool1]          ; address of the input
+    mov rsi, 64                     ; size of the input
+    mov rdx, 32                     ; number of channels
+    call remove_padding
+    lea rdi, [rel pool1_out]          ; address of the input
+    mov rsi, 64                     ; size of the input
+    mov rdx, 32                     ; number of channels
+    call remove_padding
+
     ; ===== first layer =====
 
 
     lea rdi, [rel pool1_out]        ; pre-activation
     lea rsi, [rel d_pool1]          ; gradient from above
-    mov rcx, 32*66*66               ; size
+    mov rcx, 32*64*64               ; size
     call relu_backward              ; result in d_pool1
     
 
