@@ -23,9 +23,9 @@ backward_pass:
     subss xmm0, xmm1    ; grad = pred - y
     movss [d_fc2_out], xmm0
 
-    ; d_fc2_w += d_fc2_out^T * fc1_out
-    lea rdi, [rel d_fc2_out]        ; gradient from output
-    lea rsi, [rel fc1_out]          ; input
+    ; d_fc2_w += d_fc2_out^T * fc1_out 
+    lea rdi, [rel fc1_out]          ; input
+    lea rsi, [rel d_fc2_out]        ; gradient from output
     lea rdx, [rel d_fc2_w]          ; gradient for W
     mov rcx, 1                      ; output size
     mov r9, 128                     ; input size
@@ -52,8 +52,8 @@ backward_pass:
     call relu_backward         ; result in d_fc1_out
 
     ; d_fc1_w += d_fc1_out^T * pool3_out
-    lea rdi, [rel d_fc1_out]        ; gradient from output
-    lea rsi, [rel pool3_out]        ; input
+    lea rdi, [rel pool3_out]        ; input
+    lea rsi, [rel d_fc1_out]        ; gradient from output
     lea rdx, [rel d_fc1_w]          ; gradient for W
     mov rcx, 128                    ; output size
     mov r9, 32768                   ; input size
