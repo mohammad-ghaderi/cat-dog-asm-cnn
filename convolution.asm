@@ -162,9 +162,9 @@ conv2d_backward:
     vmovups zmm14, [r8 + r10]
     vmovups zmm15, [r8 + r10*2]
 
-    vaddps  zmm13, zmm13, zmm7 ;
-    vaddps  zmm14, zmm14, zmm8 ;
-    vaddps  zmm15, zmm15, zmm9 ;
+    vaddps  zmm13, zmm13, zmm10 ;
+    vaddps  zmm14, zmm14, zmm11 ;
+    vaddps  zmm15, zmm15, zmm12 ;
 
     vmovups [r8], zmm13             ; save the d_X
     vmovups [r8 + r10], zmm14
@@ -187,6 +187,7 @@ conv2d_backward:
     vmovss [r9 + r13*4], xmm1       ; store back
 
     add rdx, 4          ; to next output
+    vbroadcastss zmm0, [rdx]                    ; grad (repeats 16 times)
 
     imul r15, r12, 3                
     add rdi, r15                ; rdi += r12*3 next filter
