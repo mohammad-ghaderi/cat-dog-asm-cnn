@@ -112,7 +112,7 @@ remove_padding:
     jnz .middle_loop
 
     ; skip right side
-    mov r10, rbx
+    mov r10, rdx
     shl r10, 2
     add rdi, r10
 
