@@ -11,19 +11,16 @@ section .text
 dot_product:
     xor rax, rax           ; index = 0
     vxorps zmm0, zmm0, zmm0      ; accumulator = 0.0
-
-    cmp rcx, 16
-    jb .tail
+    mov rbx, rcx
+    shr rbx, 4
 
 .dp_loop:
     vmovups zmm1, [rdi + rax*4]   ; loading 16 floats from x
     vmovups zmm2, [rsi + rax*4]   ; loading 16 floats from w
     vfmadd231ps zmm0, zmm1, zmm2  ; zmm0 += zmm1 * zmm2     --- beautifullllll instruction :) ---
     add rax, 16
-    mov rbx, rcx
-    sub rbx, rax              ; remaining elements
-    cmp rbx, 16
-    jae .dp_loop
+    dec rbx
+    jnz .dp_loop
 
     ; zmm0 (16 floats -> 1 float) ; 
     vextractf32x8 ymm1, zmm0, 1   ; high 256 bits
@@ -39,27 +36,7 @@ dot_product:
     ; xmm0 = sum of f1...f15
     ; these wierd instructions were usefull
 
-    jmp .tail_end
-
-.tail:
-    vxorps xmm0, xmm0, xmm0      ; zero acc if input len is less than 16 at all
-    xor rax, rax
-
-.tail_end:
-    pxor xmm2, xmm2            ; tail accumulator = 0.0
-
-.tail_loop:
-    cmp rax, rcx
-    jge .add_bias
-    movss xmm3, [rdi + rax*4]
-    movss xmm4, [rsi + rax*4]
-    mulss xmm3, xmm4
-    addss xmm2, xmm3
-    inc rax
-    jmp .tail_loop
-
 .add_bias:
-    addss xmm0, xmm2
     movss xmm1, [rdx]           ; bias
     addss xmm0, xmm1
     ret
