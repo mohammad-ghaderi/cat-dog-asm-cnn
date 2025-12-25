@@ -9,6 +9,9 @@ extern conv1_w, conv2_w, conv3_w
 extern conv1_b, conv2_b, conv3_b
 extern fc1_w, fc1_b, fc2_w, fc2_b
 
+extern BATCH_SIZE_INV
+        
+
 update_weights:
     ; update fc2_w
     lea rdi, [rel d_fc2_w]
@@ -19,13 +22,17 @@ update_weights:
     call add_to_vector
 
     ; update fc2_b
+    lea rdi, [rel d_fc2_b]
+    lea rsi, [rel fc2_b]
     vmovss xmm0, [rdi]       
-    vaddss xmm0, xmm0, [rsi]
     vmulss xmm0, xmm0, [Learning_rate]
-    vmovss [rdi], xmm0
+    vmulss xmm0, xmm0, [BATCH_SIZE_INV]
+    vmovss xmm1, [rsi]       
+    vsubss xmm1, xmm1, xmm0
+    vmovss [rsi], xmm1
 
     vxorps xmm1, xmm1, xmm1
-    vmovss [rsi], xmm1
+    vmovss [rdi], xmm1
 
     ; update fc1_w
     lea rdi, [rel d_fc1_w]
@@ -105,17 +112,23 @@ add_to_vector:
     shr rcx, 4
 .loop:
     vmovups zmm1{k1}{z}, [rdi]
-    vmovups zmm0{k1}{z}, [rsi]
-    vaddps  zmm0{k1}, zmm0, zmm1
+    vbroadcastss zmm2, [Learning_rate]
+    vmulps zmm1, zmm1, zmm2
 
-    vbroadcastss zmm1, [Learning_rate]
-    vmulps zmm0, zmm0, zmm1
+    vbroadcastss zmm2, [BATCH_SIZE_INV]
+    vmulps zmm1, zmm1, zmm2
+
+    vmovups zmm0{k1}{z}, [rsi]
+    vsubps  zmm0{k1}, zmm0, zmm1
+
 
     vmovups [rsi]{k1}, zmm0
 
     ; fill the vector with zero
     vpxorq zmm1, zmm1, zmm1
     vmovups [rdi]{k1}, zmm1
+    add rsi, 64
+    add rdi, 64
 
     dec rcx
     jnz .loop
