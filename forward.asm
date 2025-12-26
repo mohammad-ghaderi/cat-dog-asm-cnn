@@ -9,6 +9,7 @@ extern input, label
 extern conv1_out, pool1_out, conv2_out
 extern pool2_out, conv3_out, pool3_out, fc1_out
 extern output, fc1_w, fc1_b, fc2_w, fc2_b
+extern pool1_argmax, pool2_argmax, pool3_argmax
 
 extern maxpool
 extern add_padding
@@ -42,6 +43,7 @@ forward_pass:
 
     lea rdx, [rel conv1_out]    ; rdx = input address
     lea rsi, [rel pool1_out]    ; rsi = output address
+    lea rbx, [rel pool1_argmax] ; rbx = argmax address
     mov rdi, 128                ; rdi = input size
     mov rcx, 32                 ; rcx = channel size  (not changed)
     call maxpool
@@ -72,6 +74,7 @@ forward_pass:
 
     lea rdx, [rel conv2_out]    ; rdx = input address
     lea rsi, [rel pool2_out]    ; rsi = output address
+    lea rbx, [rel pool2_argmax] ; rbx = argmax address
     mov rdi, 64                 ; rdi = input size
     mov rcx, 64                 ; rcx = channel size  (not changed)
     call maxpool
@@ -96,6 +99,7 @@ forward_pass:
 
     lea rdx, [rel conv3_out]    ; rdx = input address
     lea rsi, [rel pool3_out]    ; rsi = output address
+    lea rbx, [rel pool3_argmax] ; rbx = argmax address
     mov rdi, 32                 ; rdi = input size
     mov rcx, 128                 ; rcx = channel size  (not changed)
     call maxpool

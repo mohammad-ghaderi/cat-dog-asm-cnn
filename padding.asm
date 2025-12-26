@@ -1,4 +1,4 @@
-global add_padding
+global add_padding, remove_padding
 
 extern B
 
@@ -76,6 +76,50 @@ add_padding:
     jnz .replace_loop
 
 .done:
+    ret
+
+; rdi = address of the input
+; rsi = size of the input
+; rdx = number of channels
+remove_padding:
+    mov r8, rdi         ; address of the output (sampe as input)
+    mov rbx, rsi
+    add rbx, 2          ; padding of sides
+    imul rbx, rdx
+
+    ; skip top layer
+    mov r10, rbx
+    shl r10, 2
+    add rdi, r10
+
+    mov r12, rsi
+.loop:
+    ; skip left side
+    mov r10, rdx
+    shl r10, 2
+    add rdi, r10
+
+    ; pick middle
+    mov r11, rsi
+    imul r11, rdx
+    shr r11, 4
+.middle_loop:
+    vmovdqu32 zmm1, [rdi]
+    vmovdqu32 [r8], zmm1
+    add rdi, 64
+    add r8, 64
+    dec r11
+    jnz .middle_loop
+
+    ; skip right side
+    mov r10, rdx
+    shl r10, 2
+    add rdi, r10
+
+    dec r12
+    jnz .loop
+
+    ; skip bottom layer
     ret
 
 

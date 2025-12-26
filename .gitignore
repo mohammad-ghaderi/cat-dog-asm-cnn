@@ -5,3 +5,5 @@ obj/
 dataset/
 py/
 debug/
+*.txt
+parameters/
