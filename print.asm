@@ -1,16 +1,20 @@
 ; from last project (make it 6 digit) https://github.com/mohammad-ghaderi/mnist-asm-nn/blob/main/print.asm
 section .data
     newline db 10
+    space db 32
     epoch_text db "Epoch: ", 0
+    step_text db ", Step: ", 0
+    loss_text db ", Loss: ", 0
     accuracy_text db "Accuracy is: ", 0
     scale dq 1000000.0       ; for 6 decimal digits
 
 section .bss
-    buffer resb 64
+    buffer resb 128
     epoch_buffer resb 16
+    step_buffer resb 32
 
 section .text
-global print_double, print_epoch, print_accuracy
+global print_double, print_epoch_step, print_accuracy
 
 print_double:
     push rbp
@@ -46,11 +50,15 @@ print_double:
     
 
 ; Print epoch number with text
-; r14 = epoch number (integer)
-print_epoch:
+; rcx = epoch number (integer)
+; rax = batch number (integer)
+print_epoch_step:
     push rbp
     mov rbp, rsp
-    push r14                ; save epoch number
+    push rax                ; save batch index
+    push rcx                ; save epoch number
+    push rax                ; save batch index again
+    push rcx                ; save epoch number again
     
     ; Print "Epoch: " text
     mov rax, 1              ; sys_write
@@ -71,14 +79,37 @@ print_epoch:
     mov rax, 1              ; sys_write
     mov rdi, 1              ; stdout  
     syscall
-    
-    ; Print newline
-    mov rax, 1
-    mov rdi, 1
-    mov rsi, newline
-    mov rdx, 1
+
+    ; Print ", Step: " text
+    mov rax, 1              ; sys_write
+    mov rdi, 1              ; stdout
+    mov rsi, step_text     ; ", Step: "
+    mov rdx, 9              ; length of ", Step: "
+    syscall
+
+    ; Convert step number to string
+    pop rax                 ; restore step number
+    mov rdi, step_buffer
+    call int_to_string
+
+    ; Print step number
+    mov rsi, step_buffer
+    call string_length      ; returns length in rax
+    mov rdx, rax            ; length in rdx
+    mov rax, 1              ; sys_write
+    mov rdi, 1              ; stdout  
+    syscall
+
+    ; Print ", Loss: " text
+    mov rax, 1              ; sys_write
+    mov rdi, 1              ; stdout
+    mov rsi, loss_text     ; ", Loss: "
+    mov rdx, 9              ; length of ", Loss: "
     syscall
     
+    
+    pop rcx
+    pop rax
     pop rbp
     ret
 

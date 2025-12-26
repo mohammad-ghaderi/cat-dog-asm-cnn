@@ -20,7 +20,7 @@ extern load_train_images, load_sample, initialize_parameters
 extern forward_pass
 extern backward_pass, update_weights, compute_loss
 extern input, label, output
-extern print_double
+extern print_double, print_epoch_step
 extern print_layers_out, print_parameters, print_gradients, print_new_parameteres
 
 extern B
@@ -39,7 +39,7 @@ _start:
 
     call initialize_parameters
 
-    mov rcx, 32             ; epoch
+    xor rcx, rcx             ; epoch
     push rcx
 
 .epoch_loop:
@@ -72,6 +72,13 @@ _start:
     cmp rbx, BATCH_SIZE
     jne .sample_loop            ; go to next sample
 
+    ; print Epoch: number Step: number
+    pop rax
+    pop rcx
+    push rcx
+    push rax
+    call print_epoch_step
+
     ; Average loss for batch
     pxor xmm1, xmm1
     xor rbx, rbx
@@ -86,6 +93,7 @@ _start:
     divss xmm1, xmm0           ; avg loss in xmm1
     movss xmm0, xmm1
     cvtss2sd xmm0, xmm0           ; convert to double
+
     ; print loss
     call print_double
     
