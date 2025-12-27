@@ -1,6 +1,6 @@
 %include "macros.inc"
 
-global print_layers_out, print_parameters, print_gradients, print_new_parameteres
+global print_layers_out, print_parameters, print_gradients, print_new_parameteres, print_input, print_input_padd
 global write_floats
 
 extern fc1_out, d_fc1_out, d_fc2_w, d_fc2_b
@@ -75,14 +75,20 @@ write_floats:
     pop rax
     ret
 
+print_input:
+    CALL_WRITE_FLOATS_FILE input, 49152, debug_input            ; 32*128*128
+    ret
+print_input_padd:
+    CALL_WRITE_FLOATS_FILE input, 50100, debug_input_padd       ; 32*130*130
+    ret
 
 
 print_layers_out:
     CALL_WRITE_FLOATS_FILE conv1_out, 524288, debug_out_1       ; 32*128*128
-    CALL_WRITE_FLOATS_FILE pool1_out, 131072, debug_out_2       ; 32*64*64
+    CALL_WRITE_FLOATS_FILE pool1_out, 131012, debug_out_2       ; 32*64*64
     CALL_WRITE_FLOATS_FILE conv2_out, 262144, debug_out_3       ; 64*64*64
     CALL_WRITE_FLOATS_FILE pool2_out, 65536, debug_out_4        ; 64*32*32
-    CALL_WRITE_FLOATS_FILE conv3_out, 131072, debug_out_5       ; 128*32*32
+    CALL_WRITE_FLOATS_FILE conv3_out, 131012, debug_out_5       ; 128*32*32
     CALL_WRITE_FLOATS_FILE pool3_out, 32768, debug_out_6        ; 128*16*16
     CALL_WRITE_FLOATS_FILE fc1_out, 128, debug_out_7            ; 128
     CALL_WRITE_FLOATS_FILE output, 1, debug_out_8               ; 1
@@ -106,10 +112,10 @@ print_parameters:
 
 print_gradients:
     CALL_WRITE_FLOATS_FILE d_conv1_out, 524288, debug_d_out_1   ; 32*128*128
-    CALL_WRITE_FLOATS_FILE d_pool1, 131072, debug_d_out_2       ; 32*64*64
+    CALL_WRITE_FLOATS_FILE d_pool1, 131012, debug_d_out_2       ; 32*64*64
     CALL_WRITE_FLOATS_FILE d_conv2_out, 262144, debug_d_out_3   ; 64*64*64
     CALL_WRITE_FLOATS_FILE d_pool2, 65536, debug_d_out_4        ; 64*32*32
-    CALL_WRITE_FLOATS_FILE d_conv3_out, 131072, debug_d_out_5   ; 128*32*32
+    CALL_WRITE_FLOATS_FILE d_conv3_out, 131012, debug_d_out_5   ; 128*32*32
     CALL_WRITE_FLOATS_FILE d_pool3, 32768, debug_d_out_6        ; 128*16*16
     CALL_WRITE_FLOATS_FILE d_fc1_out, 128, debug_d_out_7        ; 128
     CALL_WRITE_FLOATS_FILE d_fc2_out, 1, debug_d_out_8          ; 1
@@ -144,7 +150,9 @@ print_new_parameteres:
 
 
 section .data
-
+    debug_input db "debug/01/raw/debug_input.raw", 0
+    debug_input_padd db "debug/01/raw/debug_input_padd.raw", 0
+    
     debug_out_1 db "debug/01/raw/debug_out_1.raw", 0
     debug_out_2 db "debug/01/raw/debug_out_2.raw", 0
     debug_out_3 db "debug/01/raw/debug_out_3.raw", 0
