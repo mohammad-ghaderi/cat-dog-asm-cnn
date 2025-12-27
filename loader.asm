@@ -2,10 +2,14 @@ global load_train_images
 global load_test_images
 global load_sample
 
-extern B
+extern BATCH_SIZE
+global IMAGE_SIZE, MAX_SIZE, MAX_SIZE_TEST
+extern all_data, all_label
 
 IMAGE_SIZE equ 3*128*128
 MAX_SIZE equ 19998
+; MAX_SIZE_TEST equ 5000
+MAX_SIZE_TEST equ 50
 
 section .bss
 all_data resb MAX_SIZE*IMAGE_SIZE
@@ -60,7 +64,52 @@ load_train_images:
     ret
 
 load_test_images:
-; later...
+    mov rax, 2              ; sys open
+    lea rdi, [rel test_data]
+    mov rsi, 0              ; O_RDONLY
+    syscall
+    mov r12, rax            ; save fd
+
+    xor rsi, rsi
+    mov rax, 8              ; sys lseek
+    mov rdi, r12            ; fd
+    mov rdx, 0              ; seek set
+    syscall
+
+    mov rax, 0              ; sys read
+    mov rdi, r12            ; fd
+    mov rdx, IMAGE_SIZE*MAX_SIZE_TEST    ; bytes to read (all)
+    lea rsi, [rel all_data]  
+    syscall
+
+    ; load labels
+    mov rax, 2              ; sys open
+    lea rdi, [rel train_label]
+    mov rsi, 0              ; O_RDONLY
+    syscall
+    mov r13, rax            ; save fd
+
+    xor rsi, rsi
+    mov rax, 8              ; sys lseek
+    mov rdi, r13            ; fd
+    mov rdx, 0              ; seek set
+    syscall
+
+    mov rax, 0              ; sys read
+    mov rdi, r13            ; fd
+    mov rdx, MAX_SIZE_TEST    ; bytes to read (all)
+    lea rsi, [rel all_label]
+    syscall
+
+    ; close
+    mov rax, 3              ; sys close
+    mov rdi, r12
+    syscall
+    mov rdi, r13
+    syscall
+
+    ret
+
 
 
 ;=============== Load & Convert sample to float ==================
@@ -72,7 +121,7 @@ load_sample:
     xor rcx, rcx
     lea rsi, [rel all_data]
     lea rdi, [rel all_label]
-    imul rax, B
+    imul rax, BATCH_SIZE
     add rax, rbx
     add rdi, rax
     imul rax, IMAGE_SIZE
