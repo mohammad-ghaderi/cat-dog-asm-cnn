@@ -1,34 +1,18 @@
-BATCH_SIZE equ 32           
-EPOCHS equ 10
-TOTAL_SAMPLES equ (19998 / BATCH_SIZE) * BATCH_SIZE
-BATCHES_PER_EPOCH equ TOTAL_SAMPLES / BATCH_SIZE  ; 624 batches
 
 section .data
     msg db "Hello World", 0xa
     len equ $ - msg
 
-section .rodata
-global BATCH_SIZE_INV
-BATCH_SIZE_INV dd 0.03125    ; 1/32
-
-section .bss
-losses resd BATCH_SIZE      ; store per sample losses
-
 section .text
 global _start
-extern load_train_images, load_sample, initialize_parameters
-extern forward_pass
-extern backward_pass, update_weights, compute_loss
-extern input, label, output
-extern print_double, print_epoch_step
-extern print_layers_out, print_parameters, print_gradients, print_new_parameteres
-
-extern B
-
-
+extern BATCH_SIZE, BATCHES_PER_EPOCH, EPOCHS, MAX_SIZE_TEST
+extern load_train_images, load_test_images, load_sample, initialize_parameters
+extern forward_pass, backward_pass, update_weights, compute_loss
+extern input, label, output, losses
+extern print_double, print_epoch_step, print_layers_out, print_parameters, print_gradients
+extern print_new_parameteres, print_accuracy, print_input, print_input_padd
 
 _start:
-
     mov rax, 1
     mov rdi, 1
     lea rsi, [rel msg]
@@ -40,9 +24,9 @@ _start:
     call initialize_parameters
 
     xor rcx, rcx             ; epoch
-    push rcx
 
 .epoch_loop:
+    push rcx
     xor rax, rax            ; batch index
 .batch_loop:
     push rax                
@@ -54,7 +38,11 @@ _start:
     
     call load_sample
 
+    ; call print_input        ; #debug
+
     call forward_pass
+
+    ; call print_input_padd   ; #debug
 
     movss xmm1, [output]
     movzx eax, byte [label]
@@ -96,10 +84,15 @@ _start:
 
     ; print loss
     call print_double
+
+    ; call print_parameters       ; $debug
+    ; call print_gradients        ; $debug
+    ; call print_layers_out       ; $debug
     
 
     call update_weights
 
+    ; call print_new_parameteres  ; $debug
     pop rax
     inc rax
     cmp rax, BATCHES_PER_EPOCH
@@ -110,8 +103,58 @@ _start:
     cmp rcx, EPOCHS
     jne .epoch_loop             ; go to next epoch
 
+
+    ; ============= TEST ================
+
+    call load_test_images
+
+    xor rax, rax
+    xor rbx, rbx
+    push rax
+
+    xor r12, r12
+
+.test_loop:
+    push rbx
+    push r12
+    lea r8, [rel input]
+    lea r9, [rel label]
+    call load_sample
+
+    call forward_pass
+
+    movss xmm0, [output]
+    cvttss2si eax, xmm0  
+    movzx ecx, byte [label]
+
+    pop r12
+    cmp eax, ecx
+    jne .not_equal
+    inc r12
+.not_equal:
+
+    pop rbx
+    inc rbx
+    cmp rbx, BATCH_SIZE     ; just because i want to reuse load sample which works with a batch
+    jne .test_loop
+
+    xor rbx, rbx
+    pop rax
+    inc rax
+    cmp rax, MAX_SIZE_TEST
+    push rax
+    jne .test_loop
+
+    pop rax
+
+    cvtsi2ss xmm0, r12
+    mov rax, MAX_SIZE_TEST
+    cvtsi2ss xmm1, rax
+    divss xmm0, xmm1
+
+    cvtss2sd xmm0, xmm0 ; convert to double for print input
+    call print_accuracy ; print the accuracy saved in xmm0
     
-    inc r8
     ; exit
     mov rax, 60
     xor rdi, rdi

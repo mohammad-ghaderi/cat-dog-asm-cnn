@@ -10,12 +10,25 @@ global d_pool3, d_conv3_out, d_conv3_w, d_conv3_b
 global d_pool2, d_conv2_out, d_conv2_w, d_conv2_b
 global d_pool1, d_conv1_out, d_conv1_w, d_conv1_b
 global d_input_not_needed
+global losses
 
-global B
+global BATCH_SIZE, EPOCHS, BATCHES_PER_EPOCH
+  
 
-B equ 32        ; Batch size     
+BATCH_SIZE equ 32            ; Batch size              
+EPOCHS equ 10
+TOTAL_SAMPLES equ (19998 / BATCH_SIZE) * BATCH_SIZE
+BATCHES_PER_EPOCH equ TOTAL_SAMPLES / BATCH_SIZE  ; 624 batches
+
+
+section .rodata
+global BATCH_SIZE_INV
+BATCH_SIZE_INV dd 0.03125    ; 1/32
+
 
 section .bss
+losses resd BATCH_SIZE      ; store per sample losses
+
 
 conv1_w resd 3*3*3*32
 conv2_w resd 3*3*32*64
