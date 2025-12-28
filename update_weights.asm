@@ -1,4 +1,4 @@
-global update_weights
+global update_weights, fill_zero
 
 extern d_fc2_w, d_fc2_b, d_fc1_w, d_fc1_b
 extern d_pool3, d_conv3_out, d_conv3_w, d_conv3_b
@@ -111,6 +111,21 @@ add_to_vector:
     add rsi, 64
     add rdi, 64
 
+    dec rcx
+    jnz .loop
+
+    ret
+
+
+; rdi = inpnut vector
+; rcx = size
+fill_zero:
+    shr rcx, 4
+.loop:
+    vpxorq zmm1, zmm1, zmm1
+    vmovups [rdi], zmm1
+    add rdi, 64
+    
     dec rcx
     jnz .loop
 

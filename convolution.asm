@@ -4,6 +4,7 @@ extern input, conv1_out
 extern conv1_w, conv1_b
 extern B
 extern relu
+extern fill_zero
 
 section .text
 
@@ -120,6 +121,16 @@ conv2d_backward:
     imul r10, rbx
     imul r10, r10, 4        ; r10 = r10 * rbx*4     size of one layer of input (byte)
     imul r12, rbx, 12       ; r12 = rbx * 3*4       size of one layer of filter (byte)       
+
+    push rcx
+    push rdi
+    lea rcx, [rax + 2]
+    imul rcx, rcx
+    imul rcx, rbx
+    mov rdi, r8             ; address of d_X
+    call fill_zero
+    pop rdi
+    pop rcx   
 
     mov r11, r12
     shr r11, 6              ; number of blocks of 16 float32 number

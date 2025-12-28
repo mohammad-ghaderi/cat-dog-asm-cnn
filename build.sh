@@ -9,6 +9,7 @@ nasm -f elf64 -g -F dwarf buffer.asm -o obj/buffer.o
 nasm -f elf64 -g -F dwarf parameters.asm -o obj/parameters.o
 nasm -f elf64 -g -F dwarf padding.asm -o obj/padding.o
 nasm -f elf64 -g -F dwarf debug_tools.asm -o obj/debug.o
+nasm -f elf64 -g -F dwarf debug_buffer.asm -o obj/debug_buffer.o
 nasm -f elf64 -g -F dwarf forward.asm -o obj/forward.o
 nasm -f elf64 -g -F dwarf convolution.asm -o obj/conv.o
 nasm -f elf64 -g -F dwarf maxpool.asm -o obj/maxpool.o
@@ -22,7 +23,7 @@ nasm -f elf64 -g -F dwarf update_weights.asm -o obj/update_weights.o
 nasm -f elf64 -g -F dwarf print.asm -o obj/print.o
 
 # Link
-ld -o model obj/buffer.o obj/debug.o obj/print.o obj/padding.o \
+ld -o model obj/buffer.o obj/debug_buffer.o obj/debug.o obj/print.o obj/padding.o \
       obj/loss.o obj/matrix_ops.o obj/backward.o obj/update_weights.o \
       obj/act_f.o obj/dot_product.o obj/dense.o \
       obj/conv.o obj/maxpool.o obj/forward.o \
