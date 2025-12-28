@@ -57,8 +57,6 @@ print_epoch_step:
     mov rbp, rsp
     push rax                ; save batch index
     push rcx                ; save epoch number
-    push rax                ; save batch index again
-    push rcx                ; save epoch number again
     
     ; Print "Epoch: " text
     mov rax, 1              ; sys_write
@@ -107,9 +105,6 @@ print_epoch_step:
     mov rdx, 9              ; length of ", Loss: "
     syscall
     
-    
-    pop rcx
-    pop rax
     pop rbp
     ret
 
