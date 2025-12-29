@@ -25,7 +25,6 @@ forward_pass:
     mov rdx, 3
     call add_padding
 
-    ; CALL_WRITE_FLOATS_FILE input, 50700 , debug1   ; (1+128+1)*(1+128+1)*3
 
     lea rdi, [rel conv1_w]      ; rdi = filter address
     lea rsi, [rel input]        ; rsi = x adress
@@ -39,8 +38,6 @@ forward_pass:
 
     call conv2d
 
-    ; CALL_WRITE_FLOATS_FILE conv1_out, 524288 , debug3   ; 128*128*32
-
     lea rdx, [rel conv1_out]    ; rdx = input address
     lea rsi, [rel pool1_out]    ; rsi = output address
     lea rbx, [rel pool1_argmax] ; rbx = argmax address
@@ -48,15 +45,11 @@ forward_pass:
     mov rcx, 32                 ; rcx = channel size  (not changed)
     call maxpool
 
-    ; CALL_WRITE_FLOATS_FILE pool1_out, 131072 , debug4   ; 64*64*32
-
     ;----- Second layer --------------------------------------
     lea rdi, [rel pool1_out]    ; rdi = address of the input
     mov rsi, 64                 ; rsi = size of the input
     mov rdx, 32                 ; rdx = number of channels
     call add_padding
-
-    ; CALL_WRITE_FLOATS_FILE pool1_out, 139392 , debug5   ; (1+64+1)*(1+64+1)*32
 
     lea rdi, [rel conv2_w]      ; rdi = filter address
     lea rsi, [rel pool1_out]    ; rsi = x adress
@@ -69,8 +62,6 @@ forward_pass:
     mov rbx, 32                 ; rbx = number of channel
 
     call conv2d
-
-    ; CALL_WRITE_FLOATS_FILE conv2_out, 262144 , debug6   ; 64*64*64
 
     lea rdx, [rel conv2_out]    ; rdx = input address
     lea rsi, [rel pool2_out]    ; rsi = output address
@@ -104,7 +95,6 @@ forward_pass:
     mov rcx, 128                 ; rcx = channel size  (not changed)
     call maxpool
 
-    ; CALL_WRITE_FLOATS_FILE pool3_out, 32768 , debug7   ; 16*16*128
 
     ; pool3_out is the flattend (features)
 
@@ -126,19 +116,5 @@ forward_pass:
     mov r8, output              ; output of the first dense layer
     mov r9, 1
     call dense
-
-    ; CALL_WRITE_FLOATS_FILE output, 1 , debug9   ; 1
     
-.stop_here:
-
     ret
-
-section .data
-    debug1 db "debug/debug1.raw", 0
-    debug3 db "debug/debug3.raw", 0
-    debug4 db "debug/debug4.raw", 0
-    debug5 db "debug/debug5.raw", 0
-    debug6 db "debug/debug6.raw", 0
-    debug7 db "debug/debug7.raw", 0
-    debug8 db "debug/debug8.raw", 0
-    debug9 db "debug/debug9.raw", 0
