@@ -1,3 +1,4 @@
+default rel
 global relu
 global sigmoid
 global relu_backward
@@ -17,12 +18,16 @@ relu:
 ; xmm0 = input
 ; output = sigmoid(x) in xmm0
 sigmoid:
-    movaps xmm1, xmm0        ; xmm1 = x
-    xorps xmm2, xmm2
-    subss xmm2, xmm1         ; xmm2 = -x
+    xorps xmm1, xmm1
+    comiss xmm0, xmm1
+    jb .x_negative        ; if x < 0
 
-    movaps xmm0, xmm2
-
+    ; ---------- x >= 0 ----------
+.x_positive:
+    ; exp(-x)
+    xorps xmm1, xmm1
+    subss xmm1, xmm0      ; xmm1 = -x
+    movaps xmm0, xmm1
     push rcx
     push rdx
     push rsi
@@ -43,16 +48,41 @@ sigmoid:
     pop rdx
     pop rcx
 
-    mov rax, __one           ; load address of constant
-    movss xmm1, [rax]        ; xmm1 = 1.0
-    addss xmm0, xmm1         ; xmm0 = 1 + exp(-x)
+    movss xmm1, [one]
+    addss xmm0, xmm1      ; 1 + exp(-x)
 
-    movss xmm1, [rax]        ; xmm1 = 1.0
-    divss xmm1, xmm0         ; xmm1 = 1.0 / (1 + exp(-x))
-
-    movaps xmm0, xmm1        ; return value in xmm0
+    movss xmm1, [one]
+    divss xmm1, xmm0      ; 1 / (1 + exp(-x))
+    movaps xmm0, xmm1
     ret
 
+    ; ---------- x < 0 ----------
+.x_negative:
+
+    push rcx
+    push rdx
+    push rsi
+    push rdi
+    push r8
+    push r9
+    push r10
+    push r11
+
+    call expf                ; exp(x) returned in xmm0
+
+    pop r11
+    pop r10
+    pop r9
+    pop r8
+    pop rdi
+    pop rsi
+    pop rdx
+    pop rcx
+
+    movss xmm1, [one]
+    addss xmm1, xmm0      ; 1 + exp(x)
+    divss xmm0, xmm1      ; exp(x) / (1 + exp(x))
+    ret
 
 
 ; -----------------------------(later i may optimize here using AVX-512)
@@ -79,5 +109,6 @@ relu_backward:
 
 
 
-section .data
-__one: dd 1.0
+section .rodata
+one:  dd 1.0
+zero: dd 0.0
