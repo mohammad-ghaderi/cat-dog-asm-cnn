@@ -15,15 +15,15 @@ global losses
 global BATCH_SIZE, EPOCHS, BATCHES_PER_EPOCH
   
 
-BATCH_SIZE equ 32            ; Batch size              
+BATCH_SIZE equ 16            ; Batch size              
 EPOCHS equ 10
 TOTAL_SAMPLES equ (19998 / BATCH_SIZE) * BATCH_SIZE
-BATCHES_PER_EPOCH equ TOTAL_SAMPLES / BATCH_SIZE  ; 624 batches
+BATCHES_PER_EPOCH equ TOTAL_SAMPLES / BATCH_SIZE
 
 
 section .rodata
 global BATCH_SIZE_INV
-BATCH_SIZE_INV dd 0.03125    ; 1/32
+BATCH_SIZE_INV dd 0.0625    ; 1/16
 
 
 section .bss
