@@ -112,15 +112,10 @@ maxpool_backward:
 
     vmovdqu32 zmm0, [rsi]       
 
-    vmovdqu32 zmm1, [rdx]
-    vmovdqu32 zmm2, [rdx + r10]
-    vmovdqu32 zmm3, [rdx + r11]
-    vmovdqu32 zmm4, [rdx + r12]
-
-    vaddps zmm1{k1}{z}, zmm1, zmm0
-    vaddps zmm2{k2}{z}, zmm2, zmm0
-    vaddps zmm3{k3}{z}, zmm3, zmm0
-    vaddps zmm4{k4}{z}, zmm4, zmm0
+    vmovaps zmm1{k1}{z}, zmm0
+    vmovaps zmm2{k2}{z}, zmm0
+    vmovaps zmm3{k3}{z}, zmm0
+    vmovaps zmm4{k4}{z}, zmm0
 
     vmovdqu32 [rdx], zmm1
     vmovdqu32 [rdx + r10], zmm2
