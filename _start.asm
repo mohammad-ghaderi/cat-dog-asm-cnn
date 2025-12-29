@@ -36,6 +36,8 @@ _start:
     lea r8, [rel input]
     lea r9, [rel label]
     
+    imul rax, BATCH_SIZE
+    add rax, rbx
     call load_sample
 
     ; call print_input        ; #debug
@@ -108,17 +110,15 @@ _start:
 
     call load_test_images
 
-    xor rax, rax
-    xor rbx, rbx
-    push rax
-
-    xor r12, r12
+    xor rax, rax            ; index of the test image
+    xor r12, r12            ; number of valid predictions
 
 .test_loop:
-    push rbx
+    push rax
     push r12
     lea r8, [rel input]
     lea r9, [rel label]
+
     call load_sample
 
     call forward_pass
@@ -133,19 +133,10 @@ _start:
     inc r12
 .not_equal:
 
-    pop rbx
-    inc rbx
-    cmp rbx, BATCH_SIZE     ; just because i want to reuse load sample which works with a batch
-    jne .test_loop
-
-    xor rbx, rbx
     pop rax
     inc rax
     cmp rax, MAX_SIZE_TEST
-    push rax
     jne .test_loop
-
-    pop rax
 
     cvtsi2ss xmm0, r12
     mov rax, MAX_SIZE_TEST

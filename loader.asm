@@ -8,8 +8,7 @@ extern all_data, all_label
 
 IMAGE_SIZE equ 3*128*128
 MAX_SIZE equ 19998
-; MAX_SIZE_TEST equ 5000
-MAX_SIZE_TEST equ 50
+MAX_SIZE_TEST equ 5000
 
 section .bss
 all_data resb MAX_SIZE*IMAGE_SIZE
@@ -113,16 +112,13 @@ load_test_images:
 
 
 ;=============== Load & Convert sample to float ==================
-; rax = index of the batch, batch size should be 2^n and n >= 4
-; rbx = index of sample in batch
+; rax = index of the image
 ; r8 = input address for a batch
 ; r9 = labels address for a batch
 load_sample:
     xor rcx, rcx
     lea rsi, [rel all_data]
     lea rdi, [rel all_label]
-    imul rax, BATCH_SIZE
-    add rax, rbx
     add rdi, rax
     imul rax, IMAGE_SIZE
     add rsi, rax
@@ -133,7 +129,7 @@ load_sample:
     vmovdqu8 zmm0, [rsi + rcx]                      ; load 16 bytes
     vpmovzxbd zmm1, xmm0                            ; expand low 16 bytes
     vcvtdq2ps zmm2, zmm1                            ; convert to float32
-    vbroadcastss zmm3, dword [one_over_255]
+    vbroadcastss zmm3, dword [rel one_over_255]
     vmulps zmm2, zmm2, zmm3                         ; normalize 0-1
     vmovups [r8 + rcx*4], zmm2                      ; store 16 float
     add rcx, 16
