@@ -103,7 +103,7 @@ forward_pass:
     mov rcx, 32768              ; rcx = length of row
     lea rdx, [rel fc1_b]        ; rdx = pointer to bias (float32)
     mov r12, 0                  ; flag for ReLU as activation function
-    mov r8, fc1_out             ; output of the first dense layer
+    lea r8, [rel fc1_out]             ; output of the first dense layer
     mov r9, 128
     call dense
 
@@ -113,7 +113,7 @@ forward_pass:
     mov rcx, 128                ; rcx = length of row
     lea rdx, [rel fc2_b]        ; rdx = pointer to bias (float32)
     mov r12, 1                  ; flag for ReLU as activation function
-    mov r8, output              ; output of the first dense layer
+    lea r8, [rel output]              ; output of the first dense layer
     mov r9, 1
     call dense
     
