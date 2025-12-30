@@ -83,7 +83,7 @@ load_test_images:
 
     ; load labels
     mov rax, 2              ; sys open
-    lea rdi, [rel train_label]
+    lea rdi, [rel test_label]
     mov rsi, 0              ; O_RDONLY
     syscall
     mov r13, rax            ; save fd

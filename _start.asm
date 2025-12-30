@@ -2,6 +2,7 @@
 section .data
     msg db "Hello World", 0xa
     len equ $ - msg
+    half: dd 0.5
 
 section .text
 global _start
@@ -28,10 +29,10 @@ _start:
 .epoch_loop:
     push rcx
     xor rax, rax            ; batch index
-.batch_loop:
-    push rax                
+.batch_loop:         
     xor rbx, rbx            ; sample index
 .sample_loop:
+    push rax
     push rbx
     lea r8, [rel input]
     lea r9, [rel label]
@@ -58,12 +59,12 @@ _start:
     call backward_pass          ; ======= backpropagation =======
 
     pop rbx
+    pop rax
     inc rbx
     cmp rbx, BATCH_SIZE
     jne .sample_loop            ; go to next sample
 
     ; print Epoch: number Step: number
-    pop rax
     pop rcx
     push rcx
     push rax
@@ -105,7 +106,6 @@ _start:
     cmp rcx, EPOCHS
     jne .epoch_loop             ; go to next epoch
 
-
     ; ============= TEST ================
 
     call load_test_images
@@ -123,8 +123,13 @@ _start:
 
     call forward_pass
 
-    movss xmm0, [output]
-    cvttss2si eax, xmm0  
+    movss xmm0, [rel output]
+    movss xmm1, [half]
+    comiss xmm0, xmm1           ; CF=1 if xmm0 < xmm1,  ZF=1 if xmm0 == xmm1
+
+    seta al                     ; al = 1 if xmm0 > xmm1
+    movzx eax, al
+   
     movzx ecx, byte [label]
 
     pop r12
