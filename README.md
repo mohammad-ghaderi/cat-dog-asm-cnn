@@ -89,8 +89,12 @@ Neural Network in Assembly (MNIST from Scratch)
 https://github.com/mohammad-ghaderi/mnist-asm-nn
 
 
-#### Debuggin environment
+#### GDB debuggin environment
 ![Debuggin](docs/image4.png)
+
+##### Accuracy same as python version (78% for this model) 
+![Accuracy](docs/accuracy.png)
+(adding dropout and batchnomalization would boost it)
 
 
 ## Build & Run with Docker

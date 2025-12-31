@@ -1,3 +1,4 @@
+default rel
 global compute_loss
 
 extern logf
@@ -54,5 +55,5 @@ compute_loss:
     ret
 
 section .data
-    eps:        dd 1.0e-9
+    eps:        dd 1.0e-7
     one:        dd 1.0

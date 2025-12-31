@@ -1,3 +1,4 @@
+default rel
 global backward_pass
 extern label, output, input
 extern outer_product_add, matrix_vector_multiply
